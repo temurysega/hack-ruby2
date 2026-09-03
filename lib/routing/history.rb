@@ -9,24 +9,30 @@ module Routing
       new(rws)
     end
     def initialize(rws)
-      @tot = Hash.new(0)
-      @apr = Hash.new(0)
-      @exd = Hash.new(0)
-      @lat = Hash.new(0.0)
+      @tot=Hash.new(0)
+      @apr=Hash.new(0)
+      @exd=Hash.new(0)
+      @lat=Hash.new(0.0)
       @bt = Hash.new(0)
       @ba = Hash.new(0)
-      @n = 0
-      @a = 0
+      @n=0
+      @a= 0
       rws.each {|r| fill(r) }
-      @gl = @n.zero? ? 0.0 : @a.to_f/@n
+      @gl =@n.zero? ? 0.0 : @a.to_f/@n
     end
+
+
+
+
+
+
     def conv(nam)
-      n = @tot[nam]
+      n=@tot[nam]
       return @gl if n.zero?
       (@apr[nam]+PRIOR*@gl)/(n+PRIOR)
     end
     def bank(nam, bnk)
-      key = [nam,bnk]
+      key= [nam,bnk]
       bse = conv(nam)
       n = @bt[key]
       return bse if n.zero?
@@ -37,7 +43,7 @@ module Routing
       n.zero? ? 0.0 : @exd[nam].to_f/n
     end
     def late(nam)
-      n = @tot[nam]
+      n =@tot[nam]
       n.zero? ? 0.0 : @lat[nam]/n
     end
     def stat
@@ -69,6 +75,8 @@ module Routing
       @exd[nam]+=1 if sts=='expired'
     end
     def rnd(val)
+
+      
       (val*10000).round/10000.0
     end
   end
