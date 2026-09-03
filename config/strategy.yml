@@ -1,0 +1,39 @@
+active_profile: balanced
+declared_weight: 0.35
+profiles:
+  balanced:
+    weights: {conv: 0.26, cnts: 0.16, voll: 0.08, prio: 0.06, band: 0.10, load: 0.12, keep: 0.12,turn: 0.10}
+
+
+
+
+  split:
+    weights: {conv: 0.0, cnts: 1.0,voll: 0.0, prio: 0.0, band: 0.0, load: 0.0, keep: 0.0,turn: 0.0}
+  volume:
+    weights: {conv: 0.0, cnts: 0.0,voll: 1.0, prio: 0.0, band: 0.0, load: 0.0, keep: 0.0,turn: 0.0}
+  cascade:
+
+    weights: {conv: 0.0, cnts: 0.0, voll: 0.0, prio: 1.0, band: 0.0, load: 0.0, keep: 0.0,turn: 0.0}
+  bands:
+    weights: {conv: 0.0, cnts: 0.0, voll: 0.0, prio: 0.0, band: 1.0, load: 0.0, keep: 0.0,turn: 0.0}
+  conversion:
+    weights: {conv: 1.0, cnts: 0.0, voll: 0.0, prio: 0.0, band: 0.0, load: 0.0, keep: 0.0,turn: 0.0}
+  aware:
+    weights: {conv: 0.0, cnts: 0.0,voll: 0.0, prio: 0.0, band: 0.0, load: 0.6, keep: 0.4,turn: 0.0}
+  commitments:
+    weights: {conv: 0.0, cnts: 0.0,voll: 0.0, prio: 0.0, band: 0.0, load: 0.0, keep: 0.0,turn: 1.0}
+
+
+bands:
+  - {max: 50000, prefer: ['payflow','vipay','quickpay']}
+  - {max: 100000, prefer: ['vipay','quickpay']}
+  - {max: null, prefer: ['quickpay']}
+turnover:
+  payflow: {daily_turnover_min: 2000000}
+  vipay: {daily_turnover_max: 5000000}
+rate_limit:
+  window_sec: 60
+simulation:
+  outcomes: conversion
+  refusals: safe
+  seed: 20260730
