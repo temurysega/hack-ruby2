@@ -2,8 +2,8 @@ module Routing
   module Models
     class Provider
       SELFPROVIDER ='spacepayments'.freeze
-      MONEYCOUNTERS= %w[daily_approved_amount in_progress_amount].freeze
-      UNITCOUNTERS = %w[in_progress_count available_requisites].freeze
+      MONEYCOUNTERS= ['daily_approved_amount','in_progress_amount'].freeze
+      UNITCOUNTERS = ['in_progress_count','available_requisites'].freeze
       def self.list(raw)
         raise ArgumentError,'ожидался массив' unless raw.is_a?(Array)
         out = raw.map {|r| new(r) }
