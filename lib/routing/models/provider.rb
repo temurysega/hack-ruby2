@@ -39,6 +39,8 @@ module Routing
         @raw['dispatch_times'] << now
         self
       end
+
+      
       def fin(res, amt)
         @raw['in_progress_count'] = [@raw['in_progress_count'] - 1, 0].max
         @raw['in_progress_amount'] = [@raw['in_progress_amount'] - amt, 0.0].max
