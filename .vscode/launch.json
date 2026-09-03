@@ -1,0 +1,30 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "rdbg",
+      "name": "Debug bin/route",
+      "request": "launch",
+      "script": "${workspaceFolder}/bin/route",
+      "args": ["--queue", "data/operations_queue_10.json", "--out", "out/routing_decisions_test.json"],
+      "askParameters": false,
+      "useBundler": false
+    },
+    {
+      "type": "rdbg",
+      "name": "Debug current file",
+      "request": "launch",
+      "script": "${file}",
+      "askParameters": false,
+      "useBundler": false
+    },
+    {
+      "type": "rdbg",
+      "name": "Debug RSpec (current file)",
+      "request": "launch",
+      "command": "bundle",
+      "script": "exec rspec ${file}",
+      "askParameters": false
+    }
+  ]
+}

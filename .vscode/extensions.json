@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "Shopify.ruby-lsp",
+    "KoichiSasada.vscode-rdbg",
+    "redhat.vscode-yaml",
+    "mechatroner.rainbow-csv"
+  ]
+}

@@ -1,0 +1,7 @@
+/out/*
+!/out/.gitkeep
+/.bundle/
+/vendor/bundle/
+*.gem
+*.zip
+.rspec_status

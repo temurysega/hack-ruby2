@@ -1,0 +1,21 @@
+AllCops:
+  TargetRubyVersion: 3.1
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - 'vendor/**/*'
+    - 'out/**/*'
+    - 'scripts/validate_10.rb'
+require:
+  - rubocop-rspec
+Style/FrozenStringLiteralComment:
+  Enabled: false
+Style/Documentation:
+  Enabled: false
+Naming/MethodParameterName:
+  Enabled: false
+Naming/VariableName:
+  Enabled: false
+Metrics/BlockLength:
+  Exclude: ['spec/**/*']
+

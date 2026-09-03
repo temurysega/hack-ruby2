@@ -1,0 +1,42 @@
+{
+  "rubyLsp.rubyVersionManager": { "identifier": "none" },
+  "rubyLsp.enabledFeatures": {
+    "codeActions": true,
+    "diagnostics": true,
+    "documentHighlights": true,
+    "documentLink": true,
+    "documentSymbols": true,
+    "foldingRanges": true,
+    "formatting": true,
+    "hover": true,
+    "inlayHint": true,
+    "onTypeFormatting": true,
+    "selectionRanges": true,
+    "semanticHighlighting": true,
+    "completion": true,
+    "codeLens": true,
+    "definition": true,
+    "workspaceSymbol": true,
+    "signatureHelp": true,
+    "typeHierarchy": true
+  },
+  "rubyLsp.formatter": "rubocop",
+  "rubyLsp.linters": ["rubocop"],
+  "[ruby]": {
+    "editor.defaultFormatter": "Shopify.ruby-lsp",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.rulers": [120],
+    "editor.semanticHighlighting.enabled": true
+  },
+  "files.associations": {
+    "Gemfile": "ruby",
+    "Rakefile": "ruby",
+    ".rubocop.yml": "yaml"
+  },
+  "files.exclude": { "**/.bundle": true, "**/vendor/bundle": true },
+  "search.exclude": { "out/**": true, "vendor/**": true },
+  "rainbow_csv.comment_prefix": "#",
+  "terminal.integrated.env.windows": { "RUBYOPT": "-W:no-deprecated" }
+}

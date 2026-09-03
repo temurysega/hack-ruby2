@@ -1,0 +1,37 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "route:10",
+      "type": "shell",
+      "command": "ruby bin/route --queue data/operations_queue_10.json --out out/routing_decisions_test.json",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "report:10",
+      "type": "shell",
+      "command": "ruby bin/report --decisions out/routing_decisions_test.json --out out/routing_report_test.json",
+      "problemMatcher": []
+    },
+    {
+      "label": "validate:10",
+      "type": "shell",
+      "command": "ruby scripts/validate_10.rb out/routing_decisions_test.json",
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "all: route + report + validate",
+      "dependsOrder": "sequence",
+      "dependsOn": ["route:10", "report:10", "validate:10"],
+      "problemMatcher": []
+    },
+    {
+      "label": "spec",
+      "type": "shell",
+      "command": "bundle exec rspec",
+      "problemMatcher": []
+    }
+  ]
+}
