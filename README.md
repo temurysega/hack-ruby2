@@ -9,6 +9,8 @@
 Ruby 3.4, стандартная библиотека (`json`, `csv`, `yaml`). Внешних зависимостей нет 
 решение запускается на голом Ruby. RSpec и RuboCop подключены ток для разработки
 
+
+
 ## Запуск
 
 ```
@@ -17,6 +19,6 @@ ruby bin/report --decisions routing_decisions_test.json --out routing_report_tes
 ruby scripts/validate_10.rb out/routing_decisions_10.json
 ```
 
-## КТо делал?? 
+## Кто делал?? 
 
 Хурматуллин Тимур, НИУ ВШЭ
