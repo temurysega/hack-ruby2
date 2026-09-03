@@ -1,9 +1,9 @@
 module Routing
   module Models
     class Provider
-      SELF_PROVIDER ='spacepayments'.freeze
-      MONEY_COUNTERS= %w[daily_approved_amount in_progress_amount].freeze
-      UNIT_COUNTERS = %w[in_progress_count available_requisites].freeze
+      SELFPROVIDER ='spacepayments'.freeze
+      MONEYCOUNTERS= %w[daily_approved_amount in_progress_amount].freeze
+      UNITCOUNTERS = %w[in_progress_count available_requisites].freeze
       def self.list(raw)
         raise ArgumentError,'ожидался массив' unless raw.is_a?(Array)
         out = raw.map {|r| new(r) }
@@ -15,8 +15,8 @@ module Routing
         raise ArgumentError,'ожидался объект' unless raw.is_a?(Hash)
         raise ArgumentError, 'пустая платежка' if raw['payment_system'].to_s.strip.empty?
         @raw = raw.dup
-        MONEY_COUNTERS.each { |k| @raw[k] = @raw[k].to_f }
-        UNIT_COUNTERS.each { |k| @raw[k] = @raw[k].to_i }
+        MONEYCOUNTERS.each { |k| @raw[k] = @raw[k].to_f }
+        UNITCOUNTERS.each { |k| @raw[k] = @raw[k].to_i }
         @raw['dispatch_times'] = []
       end
       def [](key)
@@ -26,16 +26,16 @@ module Routing
         @raw['payment_system']
       end
       def own?
-        name ==SELF_PROVIDER
+        name==SELFPROVIDER
       end
       def num(key)
         val = @raw[key]
         val.nil? ? nil : val.to_f
       end
       def hold(amt, now)
-        @raw['in_progress_count'] += 1
-        @raw['in_progress_amount'] += amt
-        @raw['available_requisites'] -= 1
+        @raw['in_progress_count']+= 1
+        @raw['in_progress_amount']+=amt
+        @raw['available_requisites']-=1
         @raw['dispatch_times'] << now
         self
       end
