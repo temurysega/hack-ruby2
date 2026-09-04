@@ -14,11 +14,13 @@ module Routing
       @vol= 0.0
       @liv = []
       @bse=0.0
+      @stp= STEP
     end
     def run(ops)
       raise ArgumentError,'очередь пуста' if ops.nil?||ops.empty?
-      tms =ops.map(&:time).compact
-      @bse = tms.empty? ? 0.0 : tms.min.to_f
+      tms =ops.map(&:time).compact.sort
+      @bse = tms.empty? ? 0.0 : tms.first.to_f
+      @stp =step(tms)
       out = ops.each_with_index.map {|op, i| one(op, ops[i+1, HORIZON]||[]) }
       free(Float::INFINITY)
       out
@@ -71,7 +73,7 @@ module Routing
           {'provider'=>nam,'decision'=>'skipped','reason'=>bad[nam]['reason'],'details'=>bad[nam]['details']}
         elsif ref.include?(nam)
           {'provider'=>nam,'decision'=>'skipped','reason'=>'declined_by_provider',
-           'details'=>'отказал в приёме, заявка передана следующему','score'=>rnk.dig(nam,'score')}
+           'details'=>'отказал в приёме заявка передана следующему','score'=>rnk.dig(nam,'score')}
         elsif rnk.key?(nam)
           {'provider'=>nam,'decision'=>'skipped','reason'=>'lower_score',
            'details'=>"оценка #{rnk.dig(nam,'score')} против #{rnk.dig(win.name,'score')} у #{win.name}",
@@ -87,7 +89,12 @@ module Routing
     end
     private
     def tick(op)
-      op.time ? op.time.to_f : @bse+op.seq*STEP
+      op.time ? op.time.to_f : @bse+op.seq*@stp
+    end
+    def step(tms)
+      return STEP if tms.size<2
+      gap= tms.each_cons(2).map {|a, b| (b-a).to_f }.reject {|v| v<=0 }.sort
+      gap.empty? ? STEP : gap[gap.size/2]
     end
     def free(now)
       don, @liv =@liv.partition {|x| x[0]<=now }
