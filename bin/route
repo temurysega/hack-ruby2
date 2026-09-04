@@ -1,0 +1,80 @@
+require 'json'
+require 'optparse'
+require_relative '../lib/routing/config'
+require_relative '../lib/routing/models/provider'
+require_relative '../lib/routing/models/operation'
+require_relative '../lib/routing/constraints'
+require_relative '../lib/routing/history'
+require_relative '../lib/routing/scoring'
+require_relative '../lib/routing/simulator'
+require_relative '../lib/routing/router'
+module Cli
+  ROOT = File.expand_path('..', __dir__)
+  DEFS = {'providers'=>'data/providers.json','history'=>'data/operations_history.csv','config'=>'config/strategy.yml','queue'=>'data/operations_queue_10.json','out'=>'routing_decisions_test.json'}.freeze
+  def self.fail(msg)
+    warn "ошибка: #{msg}"
+    exit 1
+  end
+  def self.args(av)
+    opt = DEFS.transform_values {|v| File.join(ROOT, v) }
+    opt['profile'] = nil
+    prs = OptionParser.new do |o|
+      o.banner= 'Использование ruby bin/route [опции]'
+      o.on('--queue FILE', 'очередь заявок') {|v| opt['queue'] = v }
+      o.on('--out FILE', 'куда записать решения') {|v| opt['out'] = v }
+      o.on('--profile NAME', 'профиль страты') {|v| opt['profile'] = v }
+      o.on('--providers FILE', 'состояние провайдеров') {|v| opt['providers'] = v }
+      o.on('--history FILE','история операций') {|v| opt['history'] = v }
+      o.on('--config FILE', 'файл страт') {|v| opt['config'] = v }
+      o.on('-h', '--help','справка') { puts o; exit 0 }
+    end
+    prs.parse!(av)
+    opt
+  rescue OptionParser::ParseError => e
+    fail(e.message)
+  end
+  def self.feed(pth, key)
+    raw = JSON.parse(File.read(pth))
+    raw.is_a?(Array) ? raw : raw[key]
+  end
+  def self.show(opt, cfg, rtr, dec)
+    stt = rtr.stat
+    puts "профиль  #{cfg.prof}"
+    puts "очередь #{opt['queue']}"
+    puts "заявок #{dec.size}"
+    puts "записано #{opt['out']}"
+    puts
+    puts 'распределение'
+    stt['counts'].sort_by {|_, v| -v }.each do |nam, v|
+      puts format('  %-14s %3d  %5.1f%%  %12.0f RUB', nam, v, v*100.0/stt['total'], stt['volumes'][nam])
+    end
+    puts
+    puts "исходы #{dec.map {|d| d['simulated_result'] }.tally.map {|k, v| "#{k}=#{v}" }.join('  ')}"
+    fbk = stt['counts'][Routing::Models::Provider::SELFPROVIDER].to_i
+    puts "фол #{fbk} на self-провайдера" if fbk.positive?
+  end
+
+
+
+
+  
+  def self.main(av)
+    opt = args(av)
+    ['providers','history','config','queue'].each {|k| fail("файл не найден #{opt[k]}") unless File.file?(opt[k].to_s) }
+    cfg= Routing::Config.load(opt['config'], opt['profile'])
+    prs= Routing::Models::Provider.list(feed(opt['providers'], 'providers'))
+    ops= Routing::Models::Operation.list(feed(opt['queue'], 'operations'))
+    his =Routing::History.load(opt['history'])
+    rtr= Routing::Router.new(prs, Routing::Constraints.new(cfg.win),Routing::Scoring.new(cfg.sco, his), Routing::Simulator.new(cfg.sim))
+    dec = rtr.run(ops)
+    File.write(opt['out'], JSON.pretty_generate(dec))
+    show(opt, cfg, rtr, dec)
+  rescue JSON::ParserError => e
+    fail("невалидный JSON #{e.message}")
+  rescue ArgumentError, TypeError => e
+    fail(e.message)
+  rescue Errno::ENOENT, Errno::EACCES => e
+    fail(e.message)
+  end
+end
+Cli.main(ARGV)
