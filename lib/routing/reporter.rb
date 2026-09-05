@@ -115,22 +115,22 @@ module Routing
     def ldt(nam, u)
       {'code'=>'daily_limit_near','severity'=>'medium','provider'=>nam,'parameter'=>'daily_amount_limit',
        'evidence'=>"использовано #{u['used']} из #{u['limit']} (#{u['utilization_pct']}%)",
-       'message'=>"#{nam} дневной лимит выбран на #{u['utilization_pct']}% "}
+       'message'=>"#{nam} дневной лимит выбран на #{u['utilization_pct']}% -поднять дневной лимит или снизить долю"}
     end
     def devt(nam, d)
       {'code'=>'share_deviation','severity'=>'medium','provider'=>nam,'parameter'=>'traffic_percentage',
        'evidence'=>"факт #{d['share_pct']}% против цели #{d['target_pct']}%",
-       'message'=>"#{nam} отклонение доли #{d['deviation_pp']}"}
+       'message'=>"#{nam} отклонение доли #{d['deviation_pp']} п.п. -пересмотреть процентр траффика или веса профиля"}
     end
     def lowt(nam, u)
       {'code'=>'turnover_min_unmet','severity'=>'high','provider'=>nam,'parameter'=>'daily_turnover_min',
        'evidence'=>"оборот #{u['used']} при обязательстве #{u['turnover_min']}",
-       'message'=>"#{nam} недобор обязательного оборота #{(u['turnover_min']-u['used']).round}"}
+       'message'=>"#{nam} недобор обязательного оборота #{(u['turnover_min']-u['used']).round} -повысить вес в профиле"}
     end
     def fbkt(num, tot)
       {'code'=>'self_provider_used','severity'=>'high','provider'=>Models::Provider::SELFPROVIDER,'parameter'=>'banks',
        'evidence'=>"#{num} из #{tot} заявок ушли на self-провайдера",
-       'message'=>"внешние провайдеры не покрыли #{pct(num*100.0/tot)}% заявок"}
+       'message'=>"внешние провайдеры не покрыли #{pct(num*100.0/tot)}% заявок -расширить диапазоны сумм"}
     end
     def nrm
       {'code'=>'no_issues','severity'=>'info','provider'=>nil,'parameter'=>nil,
