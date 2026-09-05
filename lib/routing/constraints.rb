@@ -51,7 +51,7 @@ module Routing
     def dyly(prv, op, _now)
       lim = prv.num('daily_amount_limit')
       return nil if lim.nil?
-      cur = prv.num('daily_approved_amount').to_f+op.amt
+      cur = prv.num('daily_approved_amount').to_f+prv.num('daily_reserved').to_f+op.amt
       return nil if cur<=lim
       rej('daily_limit_exceeded', "дневной оборот все #{fmt(cur)} > #{fmt(lim)}")
     end

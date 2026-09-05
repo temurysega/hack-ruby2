@@ -2,13 +2,13 @@ module Routing
   module Models
     class Provider
       SELFPROVIDER ='spacepayments'.freeze
-      MONEYCOUNTERS= ['daily_approved_amount','in_progress_amount'].freeze
+      MONEYCOUNTERS= ['daily_approved_amount','in_progress_amount','daily_reserved'].freeze
       UNITCOUNTERS = ['in_progress_count','available_requisites'].freeze
       def self.list(raw)
         raise ArgumentError,'ожидался массив' unless raw.is_a?(Array)
         out = raw.map {|r| new(r) }
         dup = out.map(&:name).tally.select { |_, c| c > 1}.keys
-        raise ArgumentError, "providers: дубли payment_system: #{dup.join(', ')}" if dup.any?
+        raise ArgumentError, "провайдер дубли платежки #{dup.join(', ')}" if dup.any?
         out
       end
       def initialize(raw)
@@ -36,6 +36,7 @@ module Routing
         @raw['in_progress_count']+= 1
         @raw['in_progress_amount']+=amt
         @raw['available_requisites']-=1
+        @raw['daily_reserved']+=amt
         @raw['dispatch_times'] << now
         self
       end
@@ -45,6 +46,7 @@ module Routing
         @raw['in_progress_count'] = [@raw['in_progress_count'] - 1, 0].max
         @raw['in_progress_amount'] = [@raw['in_progress_amount'] - amt, 0.0].max
         @raw['available_requisites'] += 1
+        @raw['daily_reserved'] = [@raw['daily_reserved'] - amt, 0.0].max
         @raw['daily_approved_amount'] += amt if res == 'approved'
         self
       end
