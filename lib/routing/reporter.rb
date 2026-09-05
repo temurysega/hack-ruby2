@@ -4,6 +4,7 @@ module Routing
     EXPMAX= 0.25
     LOADMAX = 0.9
     DEVMAX= 10.0
+    MINOPS = 10
     SOFT = ['lower_score','declined_by_provider','reserved_fallback'].freeze
     def initialize(prs, his = nil, cfg = {})
       @prs = prs
@@ -69,7 +70,7 @@ module Routing
         out << gapt(p, nam) if @his && (p.num('conversion_24h').to_f-@his.conv(nam))>GAPMAX
         out << expt(nam) if @his && @his.expr(nam)>EXPMAX
         out << ldt(nam, utl[nam]) if utl[nam]['utilization_pct'].to_f>LOADMAX*100
-        out << devt(nam, dst[nam]) if dst[nam] && dst[nam]['deviation_pp'].abs>DEVMAX
+        out << devt(nam, dst[nam]) if dec.size>=MINOPS && dst[nam] && dst[nam]['deviation_pp'].abs>DEVMAX
         out << lowt(nam, utl[nam]) if utl[nam]['turnover_min_met']==false
       end
       fbk = dec.count {|d| d['selected_provider']==Models::Provider::SELFPROVIDER }
