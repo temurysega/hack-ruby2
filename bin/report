@@ -55,6 +55,16 @@ module Cli
     puts 'рекомендации'
     rep['recommendations'].each_with_index {|m, i| puts "  #{i+1}. #{m}" }
   end
+  def self.link(dec, ops)
+    qid = ops.map(&:id)
+    did = dec.map {|d| d['operation_id'] }
+    los = did-qid
+    fail("решения не из этой очереди #{los.size} из #{did.size} нет в очереди (#{los.first(3).join(', ')}) проверь ") if los.any?
+    mis = qid-did
+    fail("в решениях нет #{mis.size} заявок из очереди (#{mis.first(3).join(', ')}) роутинг неполн") if mis.any?
+    dbl = did.tally.select {|_, c| c>1 }.keys
+    fail("дубли в решениях #{dbl.first(3).join(', ')}") if dbl.any?
+  end
   def self.main(av)
     opt = args(av)
     ['decisions','providers','history','config','queue'].each {|k| fail("файл нет #{opt[k]}") unless File.file?(opt[k].to_s) }
@@ -63,6 +73,7 @@ module Cli
     fail('файл решений пуст или не массив') unless dec.is_a?(Array)&&dec.any?
     prs = Routing::Models::Provider.list(feed(opt['providers'], 'providers'))
     ops = Routing::Models::Operation.list(feed(opt['queue'], 'operations'))
+    link(dec, ops)
     his = Routing::History.load(opt['history'])
     rep = Routing::Reporter.new(prs, his, cfg.sco).make(dec, ops, opt['period'])
     File.write(opt['out'], JSON.pretty_generate(rep))
