@@ -1,0 +1,78 @@
+require 'json'
+require 'optparse'
+require_relative '../lib/routing/config'
+require_relative '../lib/routing/models/provider'
+require_relative '../lib/routing/models/operation'
+require_relative '../lib/routing/history'
+require_relative '../lib/routing/reporter'
+module Cli
+  ROOT = File.expand_path('..', __dir__)
+  DEFS = {'providers'=>'data/providers.json','history'=>'data/operations_history.csv','config'=>'config/strategy.yml','queue'=>'data/operations_queue_10.json','decisions'=>'routing_decisions_test.json','out'=>'routing_report_test.json'}.freeze
+  def self.fail(msg)
+    warn "ошибка #{msg}"
+    exit 1
+  end
+  def self.args(av)
+    opt= DEFS.transform_values {|v| File.join(ROOT, v) }
+    opt['period'] = nil
+    prs = OptionParser.new do |o|
+      o.banner ='Использование ruby bin/report [опции]'
+      o.on('--decisions FILE','файл решений роутинга') {|v| opt['decisions'] = v }
+      o.on('--out FILE','куда записать отчёт') {|v| opt['out'] = v }
+      o.on('--queue FILE','очередь заявок') {|v| opt['queue'] = v }
+      o.on('--period DATE', 'период отчёта') {|v| opt['period'] = v }
+      o.on('--providers FILE', 'состояние провайдеров') {|v| opt['providers'] = v }
+      o.on('--history FILE', 'история операций') {|v| opt['history'] = v }
+      o.on('--config FILE','файл страт') {|v| opt['config'] = v }
+      o.on('-h','--help','справка') { puts o; exit 0 }
+    end
+
+    prs.parse!(av)
+    opt
+  rescue OptionParser::ParseError => e
+    fail(e.message)
+  end
+
+
+  def self.feed(pth, key)
+    raw = JSON.parse(File.read(pth))
+    raw.is_a?(Array) ? raw : raw[key]
+  end
+  def self.show(opt, rep)
+    puts "решения #{opt['decisions']}"
+    puts "заявок #{rep['total_operations']}"
+    puts "период #{rep['period']}"
+    puts "записано #{opt['out']}"
+    puts
+    puts 'распределение'
+    rep['distribution'].each do |nam, d|
+      puts format(' %-14s %3d  %5.1f%% при цели %5.1f%%  отклонение %+5.1f', nam, d['count'],d['share_pct'], d['target_pct'], d['deviation_pp'])
+    end
+    puts
+    puts "исходы #{rep['outcomes'].map {|k, v| "#{k}=#{v}" }.join('  ')}"
+    puts "причины отказа #{rep['skip_reasons'].map {|k, v| "#{k}=#{v}" }.join('  ')}"
+    puts
+    puts 'рекомендации'
+    rep['recommendations'].each_with_index {|m, i| puts "  #{i+1}. #{m}" }
+  end
+  def self.main(av)
+    opt = args(av)
+    ['decisions','providers','history','config','queue'].each {|k| fail("файл нет #{opt[k]}") unless File.file?(opt[k].to_s) }
+    cfg = Routing::Config.load(opt['config'])
+    dec = feed(opt['decisions'], 'decisions')
+    fail('файл решений пуст или не массив') unless dec.is_a?(Array)&&dec.any?
+    prs = Routing::Models::Provider.list(feed(opt['providers'], 'providers'))
+    ops = Routing::Models::Operation.list(feed(opt['queue'], 'operations'))
+    his = Routing::History.load(opt['history'])
+    rep = Routing::Reporter.new(prs, his, cfg.sco).make(dec, ops, opt['period'])
+    File.write(opt['out'], JSON.pretty_generate(rep))
+    show(opt, rep)
+  rescue JSON::ParserError => e
+    fail("невалидный JSON #{e.message}")
+  rescue ArgumentError, TypeError => e
+    fail(e.message)
+  rescue Errno::ENOENT, Errno::EACCES => e
+    fail(e.message)
+  end
+end
+Cli.main(ARGV)
