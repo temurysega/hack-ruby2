@@ -1,23 +1,45 @@
 # Умный роутинг выплат
 
-Механизм распределения выплатных операций между платёжными провайдерами:
-фильтрация допустимых провайдеров, выбор лучшего по комбинации,
+Механизм распределения выплатных операций между платёжными провайдерами: фильтрация допустимых провайдеров, выбор лучшего по комбинации,
 каскад при отказе и объяснимость каждого решения.
 
 ## Стек
 
-Ruby 3.4, стандартная библиотека (`json`, `csv`, `yaml`). Внешних зависимостей нет 
-решение запускается на голом Ruby. RSpec и RuboCop подключены ток для разработки
-
-
+Ruby 3.4, стандартная библиотека (`json`, `csv`, `yaml`). Внешних зависимостей нет,
+решение запускается на голом Ruby. RSpec и RuboCop подключены ток для разработки.
 
 ## Запуск
 
+Роутинг очереди и генерация решений:
+
 ```
-ruby bin/route  --queue data/operations_queue_test.json --out routing_decisions_test.json
-ruby bin/report --decisions routing_decisions_test.json --out routing_report_test.json
+ruby bin/route --queue data/operations_queue_test.json --out routing_decisions_test.json
+```
+
+Аналитика по решениям:
+
+```
+ruby bin/report --decisions routing_decisions_test.json --queue data/operations_queue_test.json --period 2026-07-30
+```
+
+Оба скрипта пишут в корень репозитория `routing_decisions_test.json`
+и `routing_report_test.json`. 
+
+Проверка валидатором на публичной очереди
+
+```
+ruby bin/route --queue data/operations_queue_10.json --out out/routing_decisions_10.json
 ruby scripts/validate_10.rb out/routing_decisions_10.json
 ```
+
+## Как принимается решение
+
+1. Hard ограничения отсекают провайдеров, которым заявку отдать нельзя
+2. Оставшиеся получают оценку по восьми сигналам, каждый нормализован в 0…1
+   и умножен на вес профиля
+3. Побеждает наибольшая сумма. При отказе провайдера в приёме заявка уходит
+   следующему по рангу, при пустом пуле на self-провайдера
+4. В `attempts` попадают все рассмотренные провайдеры с причиной и разбором оценок
 
 ## Кто делал?? 
 
