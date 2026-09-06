@@ -44,7 +44,7 @@ module Routing
         break if sel['winner'].nil?
         if @sim.take(sel['winner'], op, cnd.size)
           win = sel['winner']
-          why = sel['reason']
+          why = ref.empty? ? sel['reason'] : 'selected_after_decline'
         else
           ref<< sel['winner'].name
         end
@@ -120,6 +120,7 @@ module Routing
     end
     def desc(why, nam, rnk)
       return 'единственный допустим провайдер' if why=='only_eligible_provider'
+      return 'выбран после отказа предыдущего провайдера' if why=='selected_after_decline'
       return 'внешние провайдеры недоступны- включён self-провайдер' if why=='no_eligible_providers'
       return 'все внешние провайдеры отказали, включён self-провайдер' if why=='all_providers_declined'
       return 'кандидаты равны- выбран по приоритету' if why=='all_scores_equal'
