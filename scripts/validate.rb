@@ -2,7 +2,8 @@ require 'json'
 module Val
   BASE=File.expand_path('..', __dir__)
   SELF= 'spacepayments'.freeze
-  def self.orig(amount, bank, prs)
+  def self.orig(raw, bank, prs)
+    amount = Float(raw, exception: false)||0.0
     prs.select do |p|
       next false if p['status'] != 'active'
       next false if p['traffic_percentage'].to_f.zero? && p['payment_system'] != SELF
@@ -59,8 +60,8 @@ module Val
     bad = 0
     puts "заявок в очереди #{que.size}, решений #{dec.size}"
     puts
-    qid = que.map { |o| o['operation_id'] }
-    did = dec.map { |d| d['operation_id'] }
+    qid = que.map { |o| o['operation_id'].to_s }
+    did = dec.map { |d| d['operation_id'].to_s }
     mis = qid - did
     ext = did - qid
     dup = did.tally.select { |_, c| c > 1 }.keys
@@ -90,10 +91,11 @@ module Val
     end
     puts
     det = 0
+    que = que.map {|o| o.is_a?(Hash) ? o : {} }
     que.each do |o|
-      d = dec.find { |x| x['operation_id'] == o['operation_id'] }
+      d = dec.find { |x| x['operation_id'].to_s == o['operation_id'].to_s }
       next unless d
-      elg = orig(o['amount'], o['bank'], prs)
+      elg = orig(o['amount'], o['bank'].to_s, prs)
       sel = d['selected_provider']
       if elg.include?(sel)
         ok += 1
@@ -111,9 +113,9 @@ module Val
     puts "допустимость выбранного проверена на #{que.size} заявках"
     puts "детерминированных кейсов найдено #{det}, все совпали" if det.positive?
     puts
-    amt = que.to_h { |o| [o['operation_id'], o['amount'].to_f] }
+    amt = que.to_h { |o| [o['operation_id'].to_s, Float(o['amount'], exception: false)||0.0] }
     use = Hash.new(0.0)
-    dec.each { |d| use[d['selected_provider']] += amt[d['operation_id']].to_f if d['simulated_result'] == 'approved' }
+    dec.each { |d| use[d['selected_provider']] += amt[d['operation_id'].to_s].to_f if d['simulated_result'] == 'approved' }
     prs.each do |p|
       lim = p['daily_amount_limit']
       next if lim.nil?
