@@ -61,7 +61,12 @@ module Routing
       end
       if win.nil?
         win= fall
-        why= op.bad? ? 'invalid_operation' : (ref.empty? ? 'no_eligible_providers' : 'all_providers_declined')
+        if win.nil?
+          win = @prs.last
+          why = 'no_provider_available'
+        else
+          why= op.bad? ? 'invalid_operation' : (ref.empty? ? 'no_eligible_providers' : 'all_providers_declined')
+        end
       end
       res =@sim.res(win, op, rnk.dig(win.name, 'signals', 'conv'))
       lat =@sim.late(win, op, res)
@@ -126,7 +131,7 @@ module Routing
       prv.num('daily_approved_amount').to_f+prv.num('daily_reserved').to_f+op.amt>lim
     end
     def fall
-      @prs.find(&:own?)||@prs.last
+      @prs.find(&:own?)
     end
     def ctx(pol, rest)
       {'pool'=>pol,'total'=>@tot,'volume'=>@vol,'counts'=>@cnt,'vols'=>@vls,'live'=>@avl.values,'scarce'=>scar(rest)}
@@ -148,6 +153,7 @@ module Routing
       return 'выбран после отказа предыдущего провайдера' if why=='selected_after_decline'
       return 'внутренние резервы ослаблены, провайдер допустим по исходным лимитам' if why=='relaxed_internal_limits'
       return 'заявка непригодна к роутингу, отдана self-провайдеру' if why=='invalid_operation'
+      return 'ни один провайдер не удовлетворяет ограничениям, self-провайдер отсутствует' if why=='no_provider_available'
       return 'внешние провайдеры недоступны- включён self-провайдер' if why=='no_eligible_providers'
       return 'все внешние провайдеры отказали, включён self-провайдер' if why=='all_providers_declined'
       return 'кандидаты равны- выбран по приоритету' if why=='all_scores_equal'
