@@ -74,7 +74,7 @@ module Routing
       { 'operation_id'=>op.id,'selected_provider'=>win.name,'attempts'=>attempts(bad, win, why, rnk, ref),'simulated_result'=>res, 'latency_sec'=>lat }
     end
     def attempts(bad, win, why, rnk, ref)
-      @prs.map do |p|
+      row = @prs.map do |p|
         nam = p.name
         if nam==win.name
           {'provider'=>nam,'decision'=>'selected','reason'=>why,'details'=>desc(why, nam, rnk),
@@ -89,6 +89,19 @@ module Routing
         else
           {'provider'=>nam,'decision'=>'skipped','reason'=>'reserved_fallback','details'=>'self-провайдер, внешние кандидаты доступны'}
         end
+      end
+      row.sort_by! {|x| rank(x, ref) }
+      row.each_with_index {|x, i| x['step'] = i+1 }
+      row
+    end
+    def rank(row, ref)
+      nam = row['provider']
+      return [3, 0] if row['decision']=='selected'
+      case row['reason']
+      when 'declined_by_provider' then [2, ref.index(nam).to_i]
+      when 'lower_score' then [1, -row['score'].to_f]
+      when 'reserved_fallback' then [4, 0]
+      else [0, @prs.index {|p| p.name==nam }.to_i]
       end
     end
     def stat
