@@ -1,0 +1,659 @@
+[
+  {
+    "operation_id": "op_101",
+    "selected_provider": "vipay",
+    "attempts": [
+      {
+        "provider": "quickpay",
+        "decision": "skipped",
+        "reason": "lower_score",
+        "details": "оценка 0.6299 против 0.8305 у vipay",
+        "score": 0.6299,
+        "signals": {
+          "conv": 0.5968,
+          "cnts": 1.0,
+          "voll": 1.0,
+          "prio": 0.0,
+          "band": 0.5,
+          "load": 0.8606,
+          "keep": 0.0,
+          "turn": 0.8142
+        },
+        "step": 1
+      },
+      {
+        "provider": "payflow",
+        "decision": "skipped",
+        "reason": "lower_score",
+        "details": "оценка 0.598 против 0.8305 у vipay",
+        "score": 0.598,
+        "signals": {
+          "conv": 0.7486,
+          "cnts": 1.0,
+          "voll": 1.0,
+          "prio": 0.5,
+          "band": 0.0,
+          "load": 0.0283,
+          "keep": 0.6667,
+          "turn": 0.5
+        },
+        "step": 2
+      },
+      {
+        "provider": "vipay",
+        "decision": "selected",
+        "reason": "best_score",
+        "details": "оценка 0.8305 против 0.6299",
+        "score": 0.8305,
+        "signals": {
+          "conv": 0.8372,
+          "cnts": 1.0,
+          "voll": 1.0,
+          "prio": 1.0,
+          "band": 1.0,
+          "load": 0.357,
+          "keep": 1.0,
+          "turn": 0.5
+        },
+        "weighted": {
+          "conv": 0.2177,
+          "cnts": 0.16,
+          "voll": 0.08,
+          "prio": 0.06,
+          "band": 0.1,
+          "load": 0.0428,
+          "keep": 0.12,
+          "turn": 0.05
+        },
+        "decisive_signal": "keep",
+        "step": 3
+      },
+      {
+        "provider": "spacepayments",
+        "decision": "skipped",
+        "reason": "reserved_fallback",
+        "details": "self-провайдер, внешние кандидаты доступны",
+        "step": 4
+      }
+    ],
+    "simulated_result": "approved",
+    "latency_sec": 25
+  },
+  {
+    "operation_id": "op_102",
+    "selected_provider": "quickpay",
+    "attempts": [
+      {
+        "provider": "vipay",
+        "decision": "skipped",
+        "reason": "bank_not_in_list",
+        "details": "банк не обслуживается alfa, разрешены sberbank, tinkoff, vtb ",
+        "step": 1
+      },
+      {
+        "provider": "payflow",
+        "decision": "skipped",
+        "reason": "lower_score",
+        "details": "оценка 0.4958 против 0.5792 у quickpay",
+        "score": 0.4958,
+        "signals": {
+          "conv": 0.5906,
+          "cnts": 0.675,
+          "voll": 0.59,
+          "prio": 1.0,
+          "band": 0.0,
+          "load": 0.0173,
+          "keep": 0.625,
+          "turn": 0.5
+        },
+        "step": 2
+      },
+      {
+        "provider": "quickpay",
+        "decision": "selected",
+        "reason": "best_score",
+        "details": "оценка 0.5792 против 0.4958",
+        "score": 0.5792,
+        "signals": {
+          "conv": 0.7275,
+          "cnts": 0.625,
+          "voll": 0.705,
+          "prio": 0.0,
+          "band": 0.5,
+          "load": 0.8565,
+          "keep": 0.0,
+          "turn": 0.8087
+        },
+        "weighted": {
+          "conv": 0.1891,
+          "cnts": 0.1,
+          "voll": 0.0564,
+          "prio": 0.0,
+          "band": 0.05,
+          "load": 0.1028,
+          "keep": 0.0,
+          "turn": 0.0809
+        },
+        "decisive_signal": "load",
+        "step": 3
+      },
+      {
+        "provider": "spacepayments",
+        "decision": "skipped",
+        "reason": "reserved_fallback",
+        "details": "self-провайдер, внешние кандидаты доступны",
+        "step": 4
+      }
+    ],
+    "simulated_result": "approved",
+    "latency_sec": 38
+  },
+  {
+    "operation_id": "op_103",
+    "selected_provider": "quickpay",
+    "attempts": [
+      {
+        "provider": "vipay",
+        "decision": "skipped",
+        "reason": "amount_exceeds_limit",
+        "details": "сумма выше max 150000 > 100000",
+        "step": 1
+      },
+      {
+        "provider": "payflow",
+        "decision": "skipped",
+        "reason": "amount_exceeds_limit",
+        "details": "сумма выше max 150000 > 50000",
+        "step": 2
+      },
+      {
+        "provider": "quickpay",
+        "decision": "selected",
+        "reason": "only_eligible_provider",
+        "details": "единственный допустим провайдер",
+        "score": 0.6963,
+        "signals": {
+          "conv": 0.5968,
+          "cnts": 0.375,
+          "voll": 0.324,
+          "prio": 1.0,
+          "band": 1.0,
+          "load": 0.8,
+          "keep": 1.0,
+          "turn": 0.7917
+        },
+        "weighted": {
+          "conv": 0.1552,
+          "cnts": 0.06,
+          "voll": 0.0259,
+          "prio": 0.06,
+          "band": 0.1,
+          "load": 0.096,
+          "keep": 0.12,
+          "turn": 0.0792
+        },
+        "decisive_signal": null,
+        "step": 3
+      },
+      {
+        "provider": "spacepayments",
+        "decision": "skipped",
+        "reason": "reserved_fallback",
+        "details": "self-провайдер, внешние кандидаты доступны",
+        "step": 4
+      }
+    ],
+    "simulated_result": "approved",
+    "latency_sec": 31
+  },
+  {
+    "operation_id": "op_104",
+    "selected_provider": "quickpay",
+    "attempts": [
+      {
+        "provider": "vipay",
+        "decision": "skipped",
+        "reason": "bank_not_in_list",
+        "details": "банк не обслуживается gazprombank, разрешены sberbank, tinkoff, vtb ",
+        "step": 1
+      },
+      {
+        "provider": "payflow",
+        "decision": "skipped",
+        "reason": "bank_not_in_list",
+        "details": "банк не обслуживается gazprombank, разрешены sberbank, alfa ",
+        "step": 2
+      },
+      {
+        "provider": "quickpay",
+        "decision": "selected",
+        "reason": "only_eligible_provider",
+        "details": "единственный допустим провайдер",
+        "score": 0.6539,
+        "signals": {
+          "conv": 0.6968,
+          "cnts": 0.2917,
+          "voll": 0.2402,
+          "prio": 1.0,
+          "band": 0.5,
+          "load": 0.8,
+          "keep": 1.0,
+          "turn": 0.8082
+        },
+        "weighted": {
+          "conv": 0.1812,
+          "cnts": 0.0467,
+          "voll": 0.0192,
+          "prio": 0.06,
+          "band": 0.05,
+          "load": 0.096,
+          "keep": 0.12,
+          "turn": 0.0808
+        },
+        "decisive_signal": null,
+        "step": 3
+      },
+      {
+        "provider": "spacepayments",
+        "decision": "skipped",
+        "reason": "reserved_fallback",
+        "details": "self-провайдер, внешние кандидаты доступны",
+        "step": 4
+      }
+    ],
+    "simulated_result": "approved",
+    "latency_sec": 24
+  },
+  {
+    "operation_id": "op_105",
+    "selected_provider": "vipay",
+    "attempts": [
+      {
+        "provider": "payflow",
+        "decision": "skipped",
+        "reason": "bank_not_in_list",
+        "details": "банк не обслуживается tinkoff, разрешены sberbank, alfa ",
+        "step": 1
+      },
+      {
+        "provider": "quickpay",
+        "decision": "skipped",
+        "reason": "lower_score",
+        "details": "оценка 0.5206 против 0.7312 у vipay",
+        "score": 0.5206,
+        "signals": {
+          "conv": 0.7132,
+          "cnts": 0.25,
+          "voll": 0.2397,
+          "prio": 0.0,
+          "band": 0.5,
+          "load": 0.8343,
+          "keep": 0.4,
+          "turn": 0.779
+        },
+        "step": 2
+      },
+      {
+        "provider": "vipay",
+        "decision": "selected",
+        "reason": "best_score",
+        "details": "оценка 0.7312 против 0.5206",
+        "score": 0.7312,
+        "signals": {
+          "conv": 0.8204,
+          "cnts": 0.575,
+          "voll": 0.6703,
+          "prio": 1.0,
+          "band": 1.0,
+          "load": 0.352,
+          "keep": 1.0,
+          "turn": 0.5
+        },
+        "weighted": {
+          "conv": 0.2133,
+          "cnts": 0.092,
+          "voll": 0.0536,
+          "prio": 0.06,
+          "band": 0.1,
+          "load": 0.0422,
+          "keep": 0.12,
+          "turn": 0.05
+        },
+        "decisive_signal": "keep",
+        "step": 3
+      },
+      {
+        "provider": "spacepayments",
+        "decision": "skipped",
+        "reason": "reserved_fallback",
+        "details": "self-провайдер, внешние кандидаты доступны",
+        "step": 4
+      }
+    ],
+    "simulated_result": "rejected",
+    "latency_sec": 40
+  },
+  {
+    "operation_id": "op_106",
+    "selected_provider": "vipay",
+    "attempts": [
+      {
+        "provider": "payflow",
+        "decision": "skipped",
+        "reason": "amount_exceeds_limit",
+        "details": "сумма выше max 52000 > 50000",
+        "step": 1
+      },
+      {
+        "provider": "quickpay",
+        "decision": "skipped",
+        "reason": "lower_score",
+        "details": "оценка 0.4374 против 0.719 у vipay",
+        "score": 0.4374,
+        "signals": {
+          "conv": 0.5968,
+          "cnts": 0.325,
+          "voll": 0.288,
+          "prio": 0.0,
+          "band": 0.0,
+          "load": 0.8309,
+          "keep": 0.25,
+          "turn": 0.7745
+        },
+        "step": 2
+      },
+      {
+        "provider": "vipay",
+        "decision": "selected",
+        "reason": "best_score",
+        "details": "оценка 0.719 против 0.4374",
+        "score": 0.719,
+        "signals": {
+          "conv": 0.8372,
+          "cnts": 0.5,
+          "voll": 0.622,
+          "prio": 1.0,
+          "band": 1.0,
+          "load": 0.3466,
+          "keep": 1.0,
+          "turn": 0.5
+        },
+        "weighted": {
+          "conv": 0.2177,
+          "cnts": 0.08,
+          "voll": 0.0498,
+          "prio": 0.06,
+          "band": 0.1,
+          "load": 0.0416,
+          "keep": 0.12,
+          "turn": 0.05
+        },
+        "decisive_signal": "band",
+        "step": 3
+      },
+      {
+        "provider": "spacepayments",
+        "decision": "skipped",
+        "reason": "reserved_fallback",
+        "details": "self-провайдер, внешние кандидаты доступны",
+        "step": 4
+      }
+    ],
+    "simulated_result": "approved",
+    "latency_sec": 36
+  },
+  {
+    "operation_id": "op_107",
+    "selected_provider": "payflow",
+    "attempts": [
+      {
+        "provider": "vipay",
+        "decision": "skipped",
+        "reason": "amount_below_minimum",
+        "details": "сумма ниже min 800 < 1000",
+        "step": 1
+      },
+      {
+        "provider": "quickpay",
+        "decision": "skipped",
+        "reason": "amount_below_minimum",
+        "details": "сумма ниже min 800 < 1000",
+        "step": 2
+      },
+      {
+        "provider": "payflow",
+        "decision": "selected",
+        "reason": "only_eligible_provider",
+        "details": "единственный допустим провайдер",
+        "score": 0.5838,
+        "signals": {
+          "conv": 0.7486,
+          "cnts": 0.675,
+          "voll": 0.59,
+          "prio": 1.0,
+          "band": 0.0,
+          "load": 0.0331,
+          "keep": 1.0,
+          "turn": 0.5
+        },
+        "weighted": {
+          "conv": 0.1946,
+          "cnts": 0.108,
+          "voll": 0.0472,
+          "prio": 0.06,
+          "band": 0.0,
+          "load": 0.004,
+          "keep": 0.12,
+          "turn": 0.05
+        },
+        "decisive_signal": null,
+        "step": 3
+      },
+      {
+        "provider": "spacepayments",
+        "decision": "skipped",
+        "reason": "reserved_fallback",
+        "details": "self-провайдер, внешние кандидаты доступны",
+        "step": 4
+      }
+    ],
+    "simulated_result": "approved",
+    "latency_sec": 56
+  },
+  {
+    "operation_id": "op_108",
+    "selected_provider": "quickpay",
+    "attempts": [
+      {
+        "provider": "vipay",
+        "decision": "skipped",
+        "reason": "bank_not_in_list",
+        "details": "банк не обслуживается raiffeisen, разрешены sberbank, tinkoff, vtb ",
+        "step": 1
+      },
+      {
+        "provider": "payflow",
+        "decision": "skipped",
+        "reason": "bank_not_in_list",
+        "details": "банк не обслуживается raiffeisen, разрешены sberbank, alfa ",
+        "step": 2
+      },
+      {
+        "provider": "quickpay",
+        "decision": "selected",
+        "reason": "only_eligible_provider",
+        "details": "единственный допустим провайдер",
+        "score": 0.6914,
+        "signals": {
+          "conv": 0.7275,
+          "cnts": 0.4107,
+          "voll": 0.3629,
+          "prio": 1.0,
+          "band": 0.5,
+          "load": 0.8321,
+          "keep": 1.0,
+          "turn": 0.7762
+        },
+        "weighted": {
+          "conv": 0.1891,
+          "cnts": 0.0657,
+          "voll": 0.029,
+          "prio": 0.06,
+          "band": 0.05,
+          "load": 0.0999,
+          "keep": 0.12,
+          "turn": 0.0776
+        },
+        "decisive_signal": null,
+        "step": 3
+      },
+      {
+        "provider": "spacepayments",
+        "decision": "skipped",
+        "reason": "reserved_fallback",
+        "details": "self-провайдер, внешние кандидаты доступны",
+        "step": 4
+      }
+    ],
+    "simulated_result": "expired",
+    "latency_sec": 168
+  },
+  {
+    "operation_id": "op_109",
+    "selected_provider": "vipay",
+    "attempts": [
+      {
+        "provider": "payflow",
+        "decision": "skipped",
+        "reason": "bank_not_in_list",
+        "details": "банк не обслуживается vtb, разрешены sberbank, alfa ",
+        "step": 1
+      },
+      {
+        "provider": "quickpay",
+        "decision": "skipped",
+        "reason": "lower_score",
+        "details": "оценка 0.6388 против 0.7032 у vipay",
+        "score": 0.6388,
+        "signals": {
+          "conv": 0.7967,
+          "cnts": 0.375,
+          "voll": 0.3432,
+          "prio": 0.0,
+          "band": 0.5,
+          "load": 0.8,
+          "keep": 1.0,
+          "turn": 0.7815
+        },
+        "step": 2
+      },
+      {
+        "provider": "vipay",
+        "decision": "selected",
+        "reason": "best_score",
+        "details": "оценка 0.7032 против 0.6388",
+        "score": 0.7032,
+        "signals": {
+          "conv": 0.786,
+          "cnts": 0.5125,
+          "voll": 0.568,
+          "prio": 1.0,
+          "band": 1.0,
+          "load": 0.3446,
+          "keep": 1.0,
+          "turn": 0.5
+        },
+        "weighted": {
+          "conv": 0.2044,
+          "cnts": 0.082,
+          "voll": 0.0454,
+          "prio": 0.06,
+          "band": 0.1,
+          "load": 0.0414,
+          "keep": 0.12,
+          "turn": 0.05
+        },
+        "decisive_signal": "prio",
+        "step": 3
+      },
+      {
+        "provider": "spacepayments",
+        "decision": "skipped",
+        "reason": "reserved_fallback",
+        "details": "self-провайдер, внешние кандидаты доступны",
+        "step": 4
+      }
+    ],
+    "simulated_result": "approved",
+    "latency_sec": 43
+  },
+  {
+    "operation_id": "op_110",
+    "selected_provider": "quickpay",
+    "attempts": [
+      {
+        "provider": "vipay",
+        "decision": "skipped",
+        "reason": "bank_not_in_list",
+        "details": "банк не обслуживается alfa, разрешены sberbank, tinkoff, vtb ",
+        "step": 1
+      },
+      {
+        "provider": "payflow",
+        "decision": "skipped",
+        "reason": "lower_score",
+        "details": "оценка 0.5321 против 0.6255 у quickpay",
+        "score": 0.5321,
+        "signals": {
+          "conv": 0.5906,
+          "cnts": 0.6194,
+          "voll": 0.5888,
+          "prio": 1.0,
+          "band": 0.0,
+          "load": 0.0197,
+          "keep": 1.0,
+          "turn": 0.5
+        },
+        "step": 2
+      },
+      {
+        "provider": "quickpay",
+        "decision": "selected",
+        "reason": "best_score",
+        "details": "оценка 0.6255 против 0.5321",
+        "score": 0.6255,
+        "signals": {
+          "conv": 0.7275,
+          "cnts": 0.4028,
+          "voll": 0.3536,
+          "prio": 0.0,
+          "band": 0.5,
+          "load": 0.8,
+          "keep": 1.0,
+          "turn": 0.7765
+        },
+        "weighted": {
+          "conv": 0.1891,
+          "cnts": 0.0644,
+          "voll": 0.0283,
+          "prio": 0.0,
+          "band": 0.05,
+          "load": 0.096,
+          "keep": 0.12,
+          "turn": 0.0777
+        },
+        "decisive_signal": "load",
+        "step": 3
+      },
+      {
+        "provider": "spacepayments",
+        "decision": "skipped",
+        "reason": "reserved_fallback",
+        "details": "self-провайдер, внешние кандидаты доступны",
+        "step": 4
+      }
+    ],
+    "simulated_result": "approved",
+    "latency_sec": 21
+  }
+]
