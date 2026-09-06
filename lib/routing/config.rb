@@ -19,19 +19,22 @@ module Routing
       @pro = (pfs[@nam]||{})['weights']
       raise ArgumentError,"у профиля #{@nam} нет весов" unless @pro.is_a?(Hash)&&@pro.any?
       bad= @pro.keys-Scoring::SIGNALS
-      raise ArgumentError,"профиль имет #{@nam} неизвестные сигналы #{bad.join(', ')}" if bad.any?
+      raise ArgumentError,"профиль #{@nam} неизвестные сигналы #{bad.join(', ')}" if bad.any?
     end
 
 
 
     def sco
-      {'weights'=>@pro,'declared_weight'=>@raw['declared_weight'],'bands'=>@raw['bands']||[],'turnover'=>@raw['turnover']||{} }
+      {'weights'=>@pro,'declared_weight'=>@raw['declared_weight'],'bands'=>@raw['bands']||[],'overrides'=>ovr }
     end
     def sim
       @raw['simulation']||{}
     end
     def win
-      { 'window_sec'=>(@raw['rate_limit']||{})['window_sec'] }
+      { 'window_sec'=>(@raw['rate_limit']||{})['window_sec'],'overrides'=>ovr }
+    end
+    def ovr
+      @raw['overrides']||{}
     end
     def prof
       @nam
