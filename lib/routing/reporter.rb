@@ -9,14 +9,12 @@ module Routing
     def initialize(prs, his = nil, cfg = {})
       @prs = prs
       @his = his
-      @trn = cfg['turnover']||{}
+      @ovr = cfg['overrides']||{}
     end
     def make(dec, ops = [], per = nil)
       raise ArgumentError,'нет решений для отчёта' if dec.nil?||dec.empty?
       rec = tips(dec, ops)
-      {'period'=>per.to_s.empty? ? 'не указан' : per.to_s,'total_operations'=>dec.size,'distribution'=>dist(dec, ops),'skip_reasons'=>skip(dec),'not_selected_reasons'=>cnts(dec, true),'projected_daily_utilization'=>util(dec, ops),'outcomes'=>dec.map {|d| d['simulated_result'] }.tally,
-       'conversion_calibration'=>calb,
-       'recommendations'=>rec.map {|t| t['message'] },'recommendations_detailed'=>rec}
+      {'period'=>per.to_s.empty? ? 'не указан' : per.to_s,'total_operations'=>dec.size,'distribution'=>dist(dec, ops),'skip_reasons'=>skip(dec),'not_selected_reasons'=>cnts(dec, true),'projected_daily_utilization'=>util(dec, ops),'outcomes'=>dec.map {|d| d['simulated_result'] }.tally,'conversion_calibration'=>calb,'recommendations'=>rec.map {|t| t['message'] },'recommendations_detailed'=>rec}
     end
     def dist(dec, ops = [])
       sum= amts(ops)
@@ -57,8 +55,7 @@ module Routing
       @prs.reject(&:own?).to_h do |p|
         dcl= p.num('conversion_24h').to_f
         act= @his.conv(p.name)
-        [p.name, {'declared'=>dcl,'actual_smoothed'=>pct(act, 4),'gap'=>pct(act-dcl, 4),
-                  'expired_share'=>pct(@his.expr(p.name), 4),'avg_latency_sec'=>pct(@his.late(p.name))}]
+        [p.name, {'declared'=>dcl,'actual_smoothed'=>pct(act, 4),'gap'=>pct(act-dcl, 4),'expired_share'=>pct(@his.expr(p.name), 4),'avg_latency_sec'=>pct(@his.late(p.name))}]
       end
     end
     def tips(dec, ops = [])
@@ -99,14 +96,14 @@ module Routing
       (ops||[]).to_h {|o| [o.id, o.amt] }
     end
     def mini(prv)
-      prv.num('daily_turnover_min')||(@trn[prv.name]||{})['daily_turnover_min']&.to_f
+      prv.num('daily_turnover_min')||(@ovr[prv.name]||{})['daily_turnover_min']&.to_f
     end
     def gapt(prv, nam)
       dcl = prv.num('conversion_24h').to_f
       act = @his.conv(nam)
       {'code'=>'conversion_overstated','severity'=>'high','provider'=>nam,'parameter'=>'traffic_percentage',
        'evidence'=>"заявлено #{dcl}- фактически #{pct(act, 3)} по #{@his.stat[nam]['operations']} операциям",
-       'message'=>"#{nam} заявленная конверсия завышена на #{pct(dcl-act, 3)} снизить traffic_percentage с #{prv.num('traffic_percentage').to_i}"}
+       'message'=>"#{nam} заявленная конверсия завышена на #{pct(dcl-act, 3)} снизить процент трафик с #{prv.num('traffic_percentage').to_i}"}
     end
     def expt(nam)
       {'code'=>'high_expired_share','severity'=>'high','provider'=>nam,'parameter'=>'avg_latency_sec',
@@ -121,7 +118,7 @@ module Routing
     def devt(nam, d)
       {'code'=>'share_deviation','severity'=>'medium','provider'=>nam,'parameter'=>'traffic_percentage',
        'evidence'=>"факт #{d['share_pct']}% против цели #{d['target_pct']}%",
-       'message'=>"#{nam} отклонение доли #{d['deviation_pp']} п.п. -пересмотреть процентр траффика или веса профиля"}
+       'message'=>"#{nam} отклонение доли #{d['deviation_pp']} п.п. -пересмотреть процент траффика или веса профиля"}
     end
     def lowt(nam, u)
       {'code'=>'turnover_min_unmet','severity'=>'high','provider'=>nam,'parameter'=>'daily_turnover_min',
