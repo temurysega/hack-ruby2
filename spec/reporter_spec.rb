@@ -85,10 +85,20 @@ RSpec.describe Routing::Reporter do
       expect(unr['reason']).to eq('daily_limit_headroom')
       expect(unr['reachable_pct']).to be < unr['target_pct']
     end
-    it 'молчит когда лимиты просторные' do
+    it 'молчит про дневной лимит когда он просторный' do
       big = Fix.json('providers.json')['providers'].map { |p| p.merge('daily_amount_limit'=>99_000_000, 'daily_approved_amount'=>0) }
       out = described_class.new(Routing::Models::Provider.list(big), his, cfg.sco).make(dec, ops)
-      expect(out['unreachable_targets']).to be_empty
+      expect(out['unreachable_targets'].map { |u| u['reason'] }).not_to include('daily_limit_headroom')
+    end
+    it 'помечает обязательство по обороту, недостижимое на объёме очереди' do
+      unr = rep['unreachable_targets'].find { |u| u['reason'] == 'turnover_min_unreachable' }
+      expect(unr['provider']).to eq('quickpay')
+      expect(unr['reachable_pct']).to be < 100.0
+    end
+    it 'не помечает обязательство, которое очередь способна закрыть' do
+      cut = cfg.sco.merge('overrides'=>cfg.sco['overrides'].merge('quickpay'=>{'daily_turnover_min'=>1_200_000}))
+      out = described_class.new(Fix.prov, his, cut).make(dec, ops)
+      expect(out['unreachable_targets'].map { |u| u['reason'] }).not_to include('turnover_min_unreachable')
     end
   end
   describe 'рекомендации' do

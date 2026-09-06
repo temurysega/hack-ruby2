@@ -68,6 +68,13 @@ module Routing
                   'details'=>'ни разу не прошёл hard-фильтр на всей очереди'}
           next
         end
+        low = mini(p)
+        cur = p.num('daily_approved_amount').to_f
+        if low&&cur+sum.values.sum<low
+          out << {'provider'=>p.name,'target_pct'=>100.0,'reachable_pct'=>pct((cur+sum.values.sum)*100.0/low),
+                  'reason'=>'turnover_min_unreachable',
+                  'details'=>"обязательство #{low.round} за сутки, набрано #{cur.round}, весь объём очереди #{sum.values.sum.round} недобор не покрывает"}
+        end
         lim = p.num('daily_amount_limit')
         next if lim.nil?||avg<=0
         rom = lim-p.num('daily_approved_amount').to_f
@@ -118,14 +125,17 @@ module Routing
       dst= dist(dec, ops)
       utl = util(dec, ops)
       wys = why(dec)
-      unr = unrc(dec, ops).to_h {|u| [u['provider'], u] }
+      vol = amts(ops).values.sum
+      unt = unrc(dec, ops).reject {|u| u['reason']=='turnover_min_unreachable' }
+      unr = unt.to_h {|u| [u['provider'], u] }
       @prs.reject(&:own?).each do |p|
         nam = p.name
         out << gapt(p, nam) if @his && (p.num('conversion_24h').to_f-@his.conv(nam))>GAPMAX
         out << expt(nam) if @his && @his.expr(nam)>EXPMAX
         out << ldt(nam, utl[nam]) if utl[nam]['utilization_pct'].to_f>LOADMAX*100
-        out << devt(nam, dst[nam], wys[nam], unr[nam]) if dec.size>=MINOPS && dst[nam] && dst[nam]['deviation_pp'].abs>DEVMAX
-        out << lowt(nam, utl[nam]) if utl[nam]['turnover_min_met']==false
+        oth = unt.map {|u| u['provider'] }.reject {|x| x==nam }.first
+        out << devt(nam, dst[nam], wys[nam], unr[nam], oth) if dec.size>=MINOPS && dst[nam] && dst[nam]['deviation_pp'].abs>DEVMAX
+        out << lowt(nam, utl[nam]) if utl[nam]['turnover_min_met']==false&&(utl[nam]['turnover_min']-utl[nam]['used'])<=vol
       end
       fbk = dec.count {|d| d['selected_provider']==Models::Provider::SELFPROVIDER }
       out << fbkt(fbk, dec.size) if fbk.positive?
@@ -180,22 +190,27 @@ module Routing
        'evidence'=>"использовано #{u['used']} из #{u['limit']} (#{u['utilization_pct']}%)",
        'message'=>"#{nam} дневной лимит выбран на #{u['utilization_pct']}% -поднять дневной лимит или снизить долю"}
     end
-    def devt(nam, d, cnt = nil, unr = nil)
-      top = d['deviation_pp'].to_f<0 && cnt && cnt.any? ? cnt.first : nil
-      act = if unr
+    def devt(nam, d, cnt = nil, unr = nil, oth = nil)
+      neg = d['deviation_pp'].to_f<0
+      top = neg && cnt && cnt.any? ? cnt.first : nil
+      act = if neg&&unr
               "-цель недостижима, доступно #{unr['reachable_pct']}% из #{unr['target_pct']}%"
-            elsif top
+            elsif neg&&top
               "-отсекался #{top[1]} раз по причине #{top[0]}"
+            elsif !neg&&oth
+              "-перебор компенсирует недостижимую долю #{oth}"
             else
               '-пересмотреть процент траффика или веса профиля'
             end
-      par = if unr
+      par = if neg&&unr
               unr['reason']=='daily_limit_headroom' ? 'daily_amount_limit' : 'status'
+            elsif neg&&top
+              top[0]
             else
-              top ? top[0] : 'traffic_percentage'
+              'traffic_percentage'
             end
-      {'code'=>unr ? 'target_unreachable' : 'share_deviation','severity'=>'medium','provider'=>nam,'parameter'=>par,
-       'evidence'=>unr ? unr['details'] : "факт #{d['share_pct']}% против цели #{d['target_pct']}%#{top ? ", основной отсев #{top[0]} #{top[1]}" : ''}",
+      {'code'=>neg&&unr ? 'target_unreachable' : 'share_deviation','severity'=>'medium','provider'=>nam,'parameter'=>par,
+       'evidence'=>neg&&unr ? unr['details'] : "факт #{d['share_pct']}% против цели #{d['target_pct']}%#{top ? ", основной отсев #{top[0]} #{top[1]}" : ''}",
        'message'=>"#{nam} отклонение доли #{d['deviation_pp']} п.п. #{act}"}
     end
     def lowt(nam, u)
