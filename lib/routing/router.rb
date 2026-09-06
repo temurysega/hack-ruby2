@@ -33,9 +33,9 @@ module Routing
       now=tick(op)
       free(now)
       bad=@con.scan(@prs, op, now)
-      ext =@prs.reject {|p| bad[p.name]||p.own? }
+      ext =op.bad? ? [] : @prs.reject {|p| bad[p.name]||p.own? }
       rlx = false
-      if ext.empty?
+      if ext.empty?&&!op.bad?
         nms = @con.pass(@snp, op, nil).reject(&:own?).map(&:name)
         ext = @prs.select {|p| nms.include?(p.name)&&!over(p, op) }
         rlx = ext.any?
@@ -61,7 +61,7 @@ module Routing
       end
       if win.nil?
         win= fall
-        why= ref.empty? ? 'no_eligible_providers' : 'all_providers_declined'
+        why= op.bad? ? 'invalid_operation' : (ref.empty? ? 'no_eligible_providers' : 'all_providers_declined')
       end
       res =@sim.res(win, op, rnk.dig(win.name, 'signals', 'conv'))
       lat =@sim.late(win, op, res)
@@ -134,6 +134,7 @@ module Routing
       return 'единственный допустим провайдер' if why=='only_eligible_provider'
       return 'выбран после отказа предыдущего провайдера' if why=='selected_after_decline'
       return 'внутренние резервы ослаблены, провайдер допустим по исходным лимитам' if why=='relaxed_internal_limits'
+      return 'заявка непригодна к роутингу, отдана self-провайдеру' if why=='invalid_operation'
       return 'внешние провайдеры недоступны- включён self-провайдер' if why=='no_eligible_providers'
       return 'все внешние провайдеры отказали, включён self-провайдер' if why=='all_providers_declined'
       return 'кандидаты равны- выбран по приоритету' if why=='all_scores_equal'

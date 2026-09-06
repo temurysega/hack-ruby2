@@ -4,25 +4,23 @@ module Routing
     class Operation
       def self.list(raw)
         raise ArgumentError,'ожидался массив' unless raw.is_a?(Array)
-        out = raw.each_with_index.map {|r, i| new(r, i) }
-        dup =out.map(&:id).tally.select { |_, c| c > 1}.keys
-        raise ArgumentError,"дубли операций #{dup.join(', ')}" if dup.any?
-        out
+        raw.each_with_index.map {|r, i| new(r, i) }
       end
-
-
-
-
-
       def initialize(raw, idx = 0)
-        raise ArgumentError,'ожидался объект' unless raw.is_a?(Hash)
-        raise ArgumentError,'пустой айдишнмик' if raw['operation_id'].to_s.strip.empty?
-        val = Float(raw['amount'], exception: false)
-        raise ArgumentError,"#{raw['operation_id']} некорректное количествол" if val.nil?||val<=0
-        @raw =raw.dup
-        @idx= idx
-        @amt= val
-        @time =pars(raw['created_at'])
+        @raw = raw.is_a?(Hash) ? raw.dup : {}
+        @idx = idx
+        @bad = false
+        @raw['operation_id'] = @raw['operation_id'].to_s
+        val = Float(@raw['amount'], exception: false)
+        if val.nil?||val<=0
+          val = 0.0
+          @bad = true
+        end
+        @amt = val
+        @time = pars(@raw['created_at'])
+      end
+      def bad?
+        @bad
       end
       def [](key)
         @raw[key]
