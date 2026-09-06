@@ -29,9 +29,9 @@ bands:
   - {max: 100000, prefer: ['vipay','quickpay']}
   - {max: null, prefer: ['quickpay']}
 overrides:
-  vipay: {volume_share_pct: 41,daily_turnover_max: 4000000, requests_minut: 5}
-  payflow: {volume_share_pct: 18, daily_turnover_min: 2000000,requests_minut: 3}
-  quickpay: {volume_share_pct: 41, daily_turnover_min: 3000000, requests_minut: 8}
+  vipay: {volume_share_pct: 41,daily_turnover_max: 4000000, requests_per_minute_limit: 5}
+  payflow: {volume_share_pct: 18, daily_turnover_min: 2000000,requests_per_minute_limit: 3}
+  quickpay: {volume_share_pct: 41, daily_turnover_min: 3000000, requests_per_minute_limit: 8}
 rate_limit:
   window_sec: 60
 simulation:
