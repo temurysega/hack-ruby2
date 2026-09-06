@@ -5,6 +5,7 @@ module Routing
     SCARMUL= 8.0
     def initialize(prs, con, sco, sim)
       @prs= prs
+      @snp = prs.map {|x| Models::Provider.new(x.to_h) }
       @con = con
       @sco = sco
       @sim= sim
@@ -33,12 +34,18 @@ module Routing
       free(now)
       bad=@con.scan(@prs, op, now)
       ext =@prs.reject {|p| bad[p.name]||p.own? }
+      rlx = false
+      if ext.empty?
+        nms = @con.pass(@snp, op, nil).reject(&:own?).map(&:name)
+        ext = @prs.select {|p| nms.include?(p.name)&&!over(p, op) }
+        rlx = ext.any?
+      end
       ext.each {|p| @avl[p.name] ||= p }
       cxt = ctx(ext, rest)
-      rnk = {}
+      rnk= {}
       ref =[]
-      win =nil
-      why ='no_eligible_providers'
+      win=nil
+      why='no_eligible_providers'
       while win.nil?
         cnd = ext.reject {|p| ref.include?(p.name) }
         sel = @sco.pick(cnd, op, cxt.merge('pool'=>cnd))
@@ -47,6 +54,7 @@ module Routing
         if @sim.take(sel['winner'], op, cnd.size)
           win = sel['winner']
           why = ref.empty? ? sel['reason'] : 'selected_after_decline'
+          why = 'relaxed_internal_limits' if rlx
         else
           ref<< sel['winner'].name
         end
@@ -74,15 +82,12 @@ module Routing
         elsif bad[nam]
           {'provider'=>nam,'decision'=>'skipped','reason'=>bad[nam]['reason'],'details'=>bad[nam]['details']}
         elsif ref.include?(nam)
-          {'provider'=>nam,'decision'=>'skipped','reason'=>'declined_by_provider',
-           'details'=>'отказал в приёме заявка передана следующему','score'=>rnk.dig(nam,'score')}
+          {'provider'=>nam,'decision'=>'skipped','reason'=>'declined_by_provider','details'=>'отказал в приёме заявка передана следующему','score'=>rnk.dig(nam,'score')}
         elsif rnk.key?(nam)
-          {'provider'=>nam,'decision'=>'skipped','reason'=>'lower_score',
-           'details'=>"оценка #{rnk.dig(nam,'score')} против #{rnk.dig(win.name,'score')} у #{win.name}",
+          {'provider'=>nam,'decision'=>'skipped','reason'=>'lower_score','details'=>"оценка #{rnk.dig(nam,'score')} против #{rnk.dig(win.name,'score')} у #{win.name}",
            'score'=>rnk.dig(nam,'score'),'signals'=>rnk.dig(nam,'signals')}
         else
-          {'provider'=>nam,'decision'=>'skipped','reason'=>'reserved_fallback',
-           'details'=>'self-провайдер, внешние кандидаты доступны'}
+          {'provider'=>nam,'decision'=>'skipped','reason'=>'reserved_fallback','details'=>'self-провайдер, внешние кандидаты доступны'}
         end
       end
     end
@@ -101,6 +106,11 @@ module Routing
     def free(now)
       don, @liv =@liv.partition {|x| x[0]<=now }
       don.each {|_,prv, amt,res| prv.fin(res, amt) }
+    end
+    def over(prv, op)
+      lim = prv.num('daily_amount_limit')
+      return false if lim.nil?
+      prv.num('daily_approved_amount').to_f+prv.num('daily_reserved').to_f+op.amt>lim
     end
     def fall
       @prs.find(&:own?)||@prs.last
@@ -123,6 +133,7 @@ module Routing
     def desc(why, nam, rnk)
       return 'единственный допустим провайдер' if why=='only_eligible_provider'
       return 'выбран после отказа предыдущего провайдера' if why=='selected_after_decline'
+      return 'внутренние резервы ослаблены, провайдер допустим по исходным лимитам' if why=='relaxed_internal_limits'
       return 'внешние провайдеры недоступны- включён self-провайдер' if why=='no_eligible_providers'
       return 'все внешние провайдеры отказали, включён self-провайдер' if why=='all_providers_declined'
       return 'кандидаты равны- выбран по приоритету' if why=='all_scores_equal'
