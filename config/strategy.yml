@@ -25,7 +25,7 @@ profiles:
 
 
 bands:
-  - {max: 50000, prefer: ['payflow','vipay','quickpay']}
+  - {max: 50000, prefer: ['vipay','quickpay','payflow']}
   - {max: 100000, prefer: ['vipay','quickpay']}
   - {max: null, prefer: ['quickpay']}
 overrides:
