@@ -7,7 +7,7 @@ require_relative '../lib/routing/history'
 require_relative '../lib/routing/reporter'
 module Cli
   ROOT = File.expand_path('..', __dir__)
-  DEFS = {'providers'=>'data/providers.json','history'=>'data/operations_history.csv','config'=>'config/strategy.yml','queue'=>'data/operations_queue_10.json','decisions'=>'routing_decisions_test.json','out'=>'routing_report_test.json'}.freeze
+  DEFS = {'providers'=>'data/providers.json','history'=>'data/operations_history.csv','config'=>'config/strategy.yml','decisions'=>'routing_decisions_test.json','out'=>'routing_report_test.json'}.freeze
   def self.fail(msg)
     warn "ошибка #{msg}"
     exit 1
@@ -15,6 +15,7 @@ module Cli
   def self.args(av)
     opt= DEFS.transform_values {|v| File.join(ROOT, v) }
     opt['period'] = nil
+    opt['queue'] = nil
     prs = OptionParser.new do |o|
       o.banner ='Использование ruby bin/report [опции]'
       o.on('--decisions FILE','файл решений роутинга') {|v| opt['decisions'] = v }
@@ -67,6 +68,7 @@ module Cli
   end
   def self.main(av)
     opt = args(av)
+    fail('не указана очередь, добавь --queue data/operations_queue_test.json') if opt['queue'].nil?
     ['decisions','providers','history','config','queue'].each {|k| fail("файл нет #{opt[k]}") unless File.file?(opt[k].to_s) }
     cfg = Routing::Config.load(opt['config'])
     dec = feed(opt['decisions'], 'decisions')
@@ -75,6 +77,7 @@ module Cli
     ops = Routing::Models::Operation.list(feed(opt['queue'], 'operations'))
     link(dec, ops)
     his = Routing::History.load(opt['history'])
+    opt['period'] ||= ops.map(&:time).compact.min&.strftime('%Y-%m-%d')
     rep = Routing::Reporter.new(prs, his, cfg.sco).make(dec, ops, opt['period'])
     File.write(opt['out'], JSON.pretty_generate(rep))
     show(opt, rep)
