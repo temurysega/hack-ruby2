@@ -37,7 +37,7 @@ module Routing
     def traf(prv, _op, _now)
       return nil unless prv.num('traffic_percentage').to_f.zero?
       return nil if prv.own?
-      rej('traffic_disabled', 'трафик отключ доля 0')
+      rej('traffic_disabled', 'traffic_percentage не задан или равен 0, провайдер вне ротации')
     end
     def amin(prv, op, _now)
       lim= prv.num('limit_amount_min')
@@ -93,7 +93,8 @@ module Routing
       rej('bank_not_in_list', "банк не обслуживается #{op.bank}, разрешены #{lst.join(', ')} ")
     end
     def rate(prv, _op, now)
-      lim =prv['requests_minut']||prv['requests_per_minute_limit']||(@ovr[prv.name]||{})['requests_minut']
+      ovr = @ovr[prv.name]||{}
+      lim =prv['requests_minut']||prv['requests_per_minute_limit']||ovr['requests_minut']||ovr['requests_per_minute_limit']
       return nil if lim.nil?||now.nil?
       cnt= prv['dispatch_times'].count {|t| now-t<@win }+1
       return nil if cnt<=lim.to_i

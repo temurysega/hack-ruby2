@@ -76,7 +76,7 @@ module Routing
       pre = bnd.nil? ? [] : (bnd['prefer']||[])
       return room(prv, op) if pre.empty?
       pos= pre.index(prv.name)
-      return 0.0 if pos.nil?
+      return room(prv, op) if pos.nil?
       pre.size<2 ? 1.0 : 1.0-pos.to_f/(pre.size-1)
     end
     def load(prv, op, _ctx)
