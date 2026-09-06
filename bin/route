@@ -10,7 +10,7 @@ require_relative '../lib/routing/simulator'
 require_relative '../lib/routing/router'
 module Cli
   ROOT = File.expand_path('..', __dir__)
-  DEFS = {'providers'=>'data/providers.json','history'=>'data/operations_history.csv','config'=>'config/strategy.yml','queue'=>'data/operations_queue_10.json','out'=>'routing_decisions_test.json'}.freeze
+  DEFS = {'providers'=>'data/providers.json','history'=>'data/operations_history.csv','config'=>'config/strategy.yml','out'=>'routing_decisions_test.json'}.freeze
   def self.fail(msg)
     warn "ошибка: #{msg}"
     exit 1
@@ -18,6 +18,7 @@ module Cli
   def self.args(av)
     opt = DEFS.transform_values {|v| File.join(ROOT, v) }
     opt['profile'] = nil
+    opt['queue'] = nil
     prs = OptionParser.new do |o|
       o.banner= 'Использование ruby bin/route [опции]'
       o.on('--queue FILE', 'очередь заявок') {|v| opt['queue'] = v }
@@ -60,6 +61,7 @@ module Cli
   
   def self.main(av)
     opt = args(av)
+    fail('не указана очередь, добавь --queue data/operations_queue_test.json') if opt['queue'].nil?
     ['providers','history','config','queue'].each {|k| fail("файл не найден #{opt[k]}") unless File.file?(opt[k].to_s) }
     cfg= Routing::Config.load(opt['config'], opt['profile'])
     prs= Routing::Models::Provider.list(feed(opt['providers'], 'providers'))

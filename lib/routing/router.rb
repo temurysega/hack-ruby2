@@ -2,7 +2,7 @@ module Routing
   class Router
     STEP= 30.0
     HORIZON=50
-    SCARMUL= 8.0
+    SCARMUL= 3.0
     def initialize(prs, con, sco, sim)
       @prs= prs
       @snp = prs.map {|x| Models::Provider.new(x.to_h) }
