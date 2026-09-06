@@ -14,7 +14,7 @@ module Routing
     def make(dec, ops = [], per = nil)
       raise ArgumentError,'нет решений для отчёта' if dec.nil?||dec.empty?
       rec = tips(dec, ops)
-      {'period'=>per.to_s.empty? ? 'не указан' : per.to_s,'total_operations'=>dec.size,'distribution'=>dist(dec, ops),'skip_reasons'=>skip(dec),'skip_reasons_by_provider'=>why(dec),'unreachable_targets'=>unrc(dec, ops),'not_selected_reasons'=>cnts(dec, true),'projected_daily_utilization'=>util(dec, ops),'outcomes'=>dec.map {|d| d['simulated_result'] }.tally,'conversion_calibration'=>calb,'recommendations'=>rec.map {|t| t['message'] },'recommendations_detailed'=>rec}
+      {'period'=>per.to_s.empty? ? 'не указан' : per.to_s,'total_operations'=>dec.size,'distribution'=>dist(dec, ops),'skip_reasons'=>skip(dec),'skip_reasons_by_provider'=>why(dec),'unreachable_targets'=>unrc(dec, ops),'not_selected_reasons'=>cnts(dec, true),'projected_daily_utilization'=>util(dec, ops),'outcomes'=>dec.map {|d| d['simulated_result'] }.tally,'outcomes_by_provider'=>outc(dec),'conversion_calibration'=>calb,'recommendations'=>rec.map {|t| t['message'] },'recommendations_detailed'=>rec}
     end
     def dist(dec, ops = [])
       sum= amts(ops)
@@ -36,6 +36,22 @@ module Routing
     end
     def skip(dec)
       cnts(dec, false)
+    end
+    def outc(dec)
+      acc = Hash.new {|h, k| h[k] = {'total'=>0,'approved'=>0,'rejected'=>0,'expired'=>0,'declined'=>0,'lat'=>0.0} }
+      dec.each do |d|
+        row = acc[d['selected_provider']]
+        row['total'] += 1
+        row[d['simulated_result']] += 1 if row.key?(d['simulated_result'])
+        row['lat'] += d['latency_sec'].to_f
+        (d['attempts']||[]).each {|a| acc[a['provider']]['declined'] += 1 if a['reason']=='declined_by_provider' }
+      end
+      acc.sort_by {|_, r| -r['total'] }.to_h do |nam, r|
+        [nam, {'total'=>r['total'],'approved'=>r['approved'],'rejected'=>r['rejected'],'expired'=>r['expired'],
+               'declined'=>r['declined'],
+               'success_rate'=>r['total'].zero? ? nil : pct(r['approved'].to_f/r['total'], 3),
+               'avg_latency_sec'=>r['total'].zero? ? nil : pct(r['lat']/r['total'])}]
+      end
     end
     def unrc(dec, ops = [])
       sum = amts(ops)
