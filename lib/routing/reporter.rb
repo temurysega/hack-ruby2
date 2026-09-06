@@ -29,9 +29,11 @@ module Routing
       (@prs.map(&:name)|cnt.keys).to_h do |nam|
         shr = cnt[nam]*100.0/tot
         tgt= prv(nam)&.num('traffic_percentage').to_f
+        vsh = vol.zero? ? 0.0 : vls[nam]*100.0/vol
+        vtt = vtg(nam)
         [nam, {'count'=>cnt[nam],'share_pct'=>pct(shr),'target_pct'=>pct(tgt),
                'deviation_pp'=>pct(shr-tgt),'volume'=>vls[nam].round,
-               'volume_share_pct'=>vol.zero? ? 0.0 : pct(vls[nam]*100.0/vol)}]
+               'volume_share_pct'=>pct(vsh),'volume_target_pct'=>pct(vtt),'volume_deviation_pp'=>pct(vsh-vtt)}]
       end
     end
     def skip(dec)
@@ -96,9 +98,11 @@ module Routing
         lim= p.num('daily_amount_limit')
         use= p.num('daily_approved_amount').to_f+add[p.name]
         low = mini(p)
+        hig = maxi(p)
         [p.name, {'start'=>p.num('daily_approved_amount').to_f.round,'added_by_queue'=>add[p.name].round,'used'=>use.round,'limit'=>lim&.round,
                   'utilization_pct'=>lim.nil?||lim.zero? ? nil : pct(use*100.0/lim),
-                  'turnover_min'=>low&.round,'turnover_min_met'=>low.nil? ? nil : use>=low}]
+                  'turnover_min'=>low&.round,'turnover_min_met'=>low.nil? ? nil : use>=low,
+                  'turnover_max'=>hig&.round,'turnover_max_ok'=>hig.nil? ? nil : use<=hig}]
       end
     end
     def calb
@@ -150,6 +154,14 @@ module Routing
     end
     def mini(prv)
       prv.num('daily_turnover_min')||(@ovr[prv.name]||{})['daily_turnover_min']&.to_f
+    end
+    def maxi(prv)
+      prv.num('daily_turnover_max')||(@ovr[prv.name]||{})['daily_turnover_max']&.to_f
+    end
+    def vtg(nam)
+      own = prv(nam)
+      return 0.0 if own.nil?
+      (own.num('volume_share_pct')||(@ovr[nam]||{})['volume_share_pct']&.to_f||own.num('traffic_percentage')||0.0).to_f
     end
     def gapt(prv, nam)
       dcl = prv.num('conversion_24h').to_f
