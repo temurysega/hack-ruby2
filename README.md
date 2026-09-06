@@ -10,20 +10,15 @@ Ruby 3.4, стандартная библиотека (`json`, `csv`, `yaml`). �
 
 ## Запуск
 
-Роутинг очереди и генерация решений:
+Обработать тестовую очередь и собрать сдаваемые файлы
 
 ```
 ruby bin/route --queue data/operations_queue_test.json --out routing_decisions_test.json
-```
-
-Аналитика по решениям:
-
-```
 ruby bin/report --decisions routing_decisions_test.json --queue data/operations_queue_test.json --period 2026-07-30
 ```
 
-Оба скрипта пишут в корень репозитория `routing_decisions_test.json`
-и `routing_report_test.json`. 
+Первая команда пишет `routing_decisions_test.json`, вторая `routing_report_test.json`,
+обе кладут файл в корень репозитория.
 
 Проверка валидатором на публичной очереди
 
