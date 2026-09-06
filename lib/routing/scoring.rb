@@ -51,14 +51,14 @@ module Routing
       dec*@dw+@his.bank(prv.name, op.bank)*(1.0-@dw)
     end
     def cnts(prv, _op, ctx)
-      tgt =(prv.num('traffic_percentage')||0.0)/100.0
+      tgt =shr(prv, ctx, 'traffic_percentage')
       tot =ctx['total'].to_i
       return tgt.zero? ? 0.5 : 1.0 if tot.zero?
       act =(ctx['counts']||{}).fetch(prv.name, 0).to_f/tot
       0.5+(tgt-act)/2.0
     end
     def voll(prv, _op, ctx)
-      tgt=(fld(prv, 'volume_share_pct')||prv.num('traffic_percentage')||0.0)/100.0
+      tgt =shr(prv, ctx, 'volume_share_pct')
       vol=(ctx['volume']||0).to_f
       return tgt.zero? ? 0.5 : 1.0 if vol.zero?
       act = (ctx['vols']||{}).fetch(prv.name, 0).to_f/vol
@@ -97,6 +97,16 @@ module Routing
       lo = fld(prv, 'daily_turnover_min')
       return 0.5 if lo.nil?||lo<=0||cur>=lo
       0.5+0.5*(lo-cur)/lo
+    end
+    def tgtv(prv, key)
+      (key=='traffic_percentage' ? prv.num(key) : fld(prv, key)||prv.num('traffic_percentage'))||0.0
+    end
+    def shr(prv, ctx, key)
+      own = tgtv(prv, key)
+      liv = ctx['live']
+      return own/100.0 if liv.nil?||liv.empty?
+      sum = liv.sum {|p| tgtv(p, key) }
+      sum<=0 ? own/100.0 : own/sum
     end
     def fld(prv, key)
       prv.num(key)||flt((@ovr[prv.name]||{})[key])

@@ -13,6 +13,7 @@ module Routing
       @tot= 0
       @vol= 0.0
       @liv = []
+      @avl = {}
       @bse=0.0
       @stp= STEP
     end
@@ -32,6 +33,7 @@ module Routing
       free(now)
       bad=@con.scan(@prs, op, now)
       ext =@prs.reject {|p| bad[p.name]||p.own? }
+      ext.each {|p| @avl[p.name] ||= p }
       cxt = ctx(ext, rest)
       rnk = {}
       ref =[]
@@ -104,7 +106,7 @@ module Routing
       @prs.find(&:own?)||@prs.last
     end
     def ctx(pol, rest)
-      {'pool'=>pol,'total'=>@tot,'volume'=>@vol,'counts'=>@cnt,'vols'=>@vls,'scarce'=>scar(rest)}
+      {'pool'=>pol,'total'=>@tot,'volume'=>@vol,'counts'=>@cnt,'vols'=>@vls,'live'=>@avl.values,'scarce'=>scar(rest)}
     end
 
 
