@@ -1,7 +1,7 @@
 RSpec.describe Routing::Constraints do
   BANKS = ['sberbank','alfa','tinkoff','vtb','raiffeisen','gazprombank'].freeze
   def self.orig(amount, bank, prs)
-    prs.select do |p|
+    fit = prs.select do |p|
       next false if p['status'] != 'active'
       next false if p['traffic_percentage'].to_f.zero? && p['payment_system'] != 'spacepayments'
       next false if p['limit_amount_min'] && amount< p['limit_amount_min']
@@ -20,7 +20,8 @@ RSpec.describe Routing::Constraints do
         end
       end
       true
-    end.map { |p| p['payment_system'] }
+    end
+    fit.map { |p| p['payment_system'] }
   end
   let(:con) { described_class.new }
   let(:prs) { Fix.prov }
@@ -103,7 +104,7 @@ RSpec.describe Routing::Constraints do
     it 'выдаёт причины строго в порядке правил когда нарушено всё' do
       cur= allbad
       got = []
-      steps.each do |_, pat|
+      steps.map(&:last).each do |pat|
         cur= cur.merge(pat)
         prv = Routing::Models::Provider.new(cur)
         prv.hold(1, 990)

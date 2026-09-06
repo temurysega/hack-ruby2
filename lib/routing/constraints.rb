@@ -1,6 +1,6 @@
 module Routing
   class Constraints
-    RULES= ['stat',  'traf','amin','amax','dyly','ipct','ipam','reqs','marg','bnks','rate'].freeze
+    RULES= ['stat','traf','amin','amax','dyly','ipct','ipam','reqs','marg','bnks','rate'].freeze
     WINDOW=60
     def initialize(cfg = {})
       @win =(cfg['window_sec']||WINDOW).to_f
@@ -28,8 +28,6 @@ module Routing
       num= val.to_f
       num==num.to_i ? num.to_i.to_s : format('%.2f', num)
     end
-
-
     def stat(prv, _op, _now)
       return nil if prv['status']=='active'
       rej('provider_inactive', "провайдер не актив #{prv['status'].inspect} (status)")
@@ -63,10 +61,6 @@ module Routing
       return nil if cur<=lim
       rej('in_progress_count_exceeded', "слишком много заявок #{fmt(cur)} > #{fmt(lim)}")
     end
-
-
-
-
     def ipam(prv, op, _now)
       lim = prv.num('in_progress_amount_limit')
       return nil if lim.nil?
@@ -75,7 +69,7 @@ module Routing
       rej('in_progress_amount_exceeded', "сумма в работе превышена #{fmt(cur)} > #{fmt(lim)}")
     end
     def reqs(prv, _op, _now)
-      return nil if prv['available_requisites']>0
+      return nil if prv['available_requisites'].positive?
       rej('no_available_requisites', "нет свободных реквизитов #{prv['available_requisites']}")
     end
     def marg(prv, _op, _now)

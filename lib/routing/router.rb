@@ -28,8 +28,6 @@ module Routing
       free(Float::INFINITY)
       out
     end
-
-
     def one(op,rest=[])
       now=tick(op)
       free(now)
@@ -38,7 +36,7 @@ module Routing
       rlx = false
       if ext.empty?&&!op.bad?
         nms = @con.pass(@snp, op, nil).reject(&:own?).map(&:name)
-        ext = @prs.select {|p| nms.include?(p.name)&&!over(p, op) }
+        ext = @prs.select {|p| nms.include?(p.name)&&!over?(p, op) }
         rlx = ext.any?
       end
       ext.each {|p| @avl[p.name] ||= p }
@@ -52,7 +50,7 @@ module Routing
         sel = @sco.pick(cnd, op, cxt.merge('pool'=>cnd))
         sel['ranked'].each {|p, r| rnk[p.name] ||= r }
         break if sel['winner'].nil?
-        if @sim.take(sel['winner'], op, cnd.size)
+        if @sim.take?(sel['winner'], op, cnd.size)
           win = sel['winner']
           why = ref.empty? ? sel['reason'] : 'selected_after_decline'
           why = ref.empty? ? 'relaxed_internal_limits' : 'relaxed_after_decline' if rlx
@@ -130,7 +128,7 @@ module Routing
       don, @liv =@liv.partition {|x| x[0]<=now }
       don.each {|_,prv, amt,res| prv.fin(res, amt) }
     end
-    def over(prv, op)
+    def over?(prv, op)
       lim = prv.num('daily_amount_limit')
       return false if lim.nil?
       prv.num('daily_approved_amount').to_f+prv.num('daily_reserved').to_f+op.amt>lim
@@ -141,9 +139,6 @@ module Routing
     def ctx(pol, rest)
       {'pool'=>pol,'total'=>@tot,'volume'=>@vol,'counts'=>@cnt,'vols'=>@vls,'live'=>@avl.values,'scarce'=>scar(rest)}
     end
-
-
-
     def scar(rest)
       return {} if rest.nil?||rest.empty?
       cnt = Hash.new(0)

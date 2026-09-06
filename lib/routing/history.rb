@@ -20,12 +20,6 @@ module Routing
       rws.each {|r| fill(r) }
       @gl =@n.zero? ? 0.0 : @a.to_f/@n
     end
-
-
-
-
-
-
     def conv(nam)
       n=@tot[nam]
       return @gl if n.zero?
@@ -75,8 +69,6 @@ module Routing
       @exd[nam]+=1 if sts=='expired'
     end
     def rnd(val)
-
-      
       (val*10000).round/10000.0
     end
   end

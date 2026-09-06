@@ -18,12 +18,6 @@ module Routing
         'signals'=>sig.to_h {|s, v| [s, rnd(v)] },
         'weighted'=>sig.to_h {|s, v| [s, rnd(v*(@wgt[s]||0.0))] } }
     end
-
-
-
-
-
-
     def pick(pol, op, ctx = {})
       return {'winner'=>nil,'reason'=>'no_eligible_providers','ranked'=>[]} if pol.nil?||pol.empty?
       rnk= pol.map {|p| [p, calc(p, op, ctx)] }.sort_by {|x| -x[1]['score'] }
@@ -43,8 +37,6 @@ module Routing
       own['weighted'].max_by {|s, v| v-oth['weighted'][s].to_f }&.first
     end
     private
-
-
     def conv(prv, op, _ctx)
       dec =prv.num('conversion_24h')||0.0
       return dec if @his.nil?
@@ -112,7 +104,7 @@ module Routing
       prv.num(key)||flt((@ovr[prv.name]||{})[key])
     end
     def flt(val)
-      val.nil? ? nil : val.to_f
+      val&.to_f
     end
     def room(prv, op)
       lo= prv.num('limit_amount_min')||0.0
@@ -124,11 +116,9 @@ module Routing
       return nil if lim.nil?||lim<=0
       (lim-use)/lim
     end
-
-    
     def clip(val)
       return 0.0 if val.nil?
-      val<0.0 ? 0.0 : (val>1.0 ? 1.0 : val)
+      val.clamp(0.0, 1.0)
     end
     def rnd(val)
       (val*10000).round/10000.0

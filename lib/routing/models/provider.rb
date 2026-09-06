@@ -29,8 +29,7 @@ module Routing
         name==SELFPROVIDER
       end
       def num(key)
-        val = @raw[key]
-        val.nil? ? nil : val.to_f
+        @raw[key]&.to_f
       end
       def hold(amt, now)
         @raw['in_progress_count']+= 1
@@ -40,8 +39,6 @@ module Routing
         @raw['dispatch_times'] << now
         self
       end
-
-      
       def fin(res, amt)
         @raw['in_progress_count'] = [@raw['in_progress_count'] - 1, 0].max
         @raw['in_progress_amount'] = [@raw['in_progress_amount'] - amt, 0.0].max

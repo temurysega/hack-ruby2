@@ -45,7 +45,7 @@ RSpec.describe Routing::Router do
       rtr.run(ops).each do |d|
         sel = d['attempts'].index { |a| a['decision'] == 'selected' }
         dcl = d['attempts'].each_index.select { |i| d['attempts'][i]['reason'] == 'declined_by_provider' }
-        dcl.each { |i| expect(i).to be < sel }
+        expect(dcl).to all(be < sel)
       end
     end
   end

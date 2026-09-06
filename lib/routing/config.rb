@@ -21,9 +21,6 @@ module Routing
       bad= @pro.keys-Scoring::SIGNALS
       raise ArgumentError,"профиль #{@nam} неизвестные сигналы #{bad.join(', ')}" if bad.any?
     end
-
-
-
     def sco
       {'weights'=>@pro,'declared_weight'=>@raw['declared_weight'],'bands'=>@raw['bands']||[],'overrides'=>ovr }
     end

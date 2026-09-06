@@ -4,7 +4,7 @@ module Val
   SELF= 'spacepayments'.freeze
   def self.orig(raw, bank, prs)
     amount = Float(raw, exception: false)||0.0
-    prs.select do |p|
+    fit = prs.select do |p|
       next false if p['status'] != 'active'
       next false if p['traffic_percentage'].to_f.zero? && p['payment_system'] != SELF
       next false if p['limit_amount_min'] && amount < p['limit_amount_min']
@@ -23,7 +23,8 @@ module Val
         end
       end
       true
-    end.map { |p| p['payment_system'] }
+    end
+    fit.map { |p| p['payment_system'] }
   end
   def self.read(pth)
     abort "ошибка файл не найден #{pth}" unless File.file?(pth.to_s)

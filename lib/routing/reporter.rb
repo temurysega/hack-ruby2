@@ -6,6 +6,8 @@ module Routing
     DEVMAX= 10.0
     MINOPS = 10
     SOFT = ['lower_score','declined_by_provider','reserved_fallback'].freeze
+    PARAMS = {'daily_limit_headroom'=>'daily_amount_limit','eligibility_coverage'=>'traffic_percentage',
+              'forced_minimum_share'=>'traffic_percentage','provider_unavailable'=>'status'}.freeze
     def initialize(prs, his = nil, cfg = {})
       @prs = prs
       @his = his
@@ -62,11 +64,23 @@ module Routing
       @prs.reject(&:own?).each do |p|
         tgt = p.num('traffic_percentage').to_f
         next if tgt<=0
-        hrd = dec.count {|d| (d['attempts']||[]).any? {|a| a['provider']==p.name&&a['decision']=='skipped'&&!SOFT.include?(a['reason']) } }
+        hrd = dec.count {|d| hard?(d, p.name) }
         if hrd==dec.size
           out << {'provider'=>p.name,'target_pct'=>pct(tgt),'reachable_pct'=>0.0,'reason'=>'provider_unavailable',
                   'details'=>'ни разу не прошёл hard-фильтр на всей очереди'}
           next
+        end
+        cov = dec.size-hrd
+        cvr = cov*100.0/dec.size
+        if cvr<tgt
+          out << {'provider'=>p.name,'target_pct'=>pct(tgt),'reachable_pct'=>pct(cvr),'reason'=>'eligibility_coverage',
+                  'details'=>"прошёл hard-фильтр на #{cov} заявках из #{dec.size}, выше #{pct(cvr)}% доля не поднимется ни при каком роутинге"}
+        end
+        sol = dec.count {|d| sole?(d, p.name) }
+        flr = sol*100.0/dec.size
+        if flr>tgt
+          out << {'provider'=>p.name,'target_pct'=>pct(tgt),'reachable_pct'=>pct(flr),'reason'=>'forced_minimum_share',
+                  'details'=>"единственный допустимый на #{sol} заявках из #{dec.size}, ниже #{pct(flr)}% доля не опустится ни при каком роутинге"}
         end
         low = mini(p)
         cur = p.num('daily_approved_amount').to_f
@@ -85,6 +99,12 @@ module Routing
                 'details'=>"остаток дневного лимита #{rom.round} при среднем чеке #{avg.round} хватает на #{cap} заявок"}
       end
       out
+    end
+    def hard?(dec, nam)
+      (dec['attempts']||[]).any? {|a| a['provider']==nam&&a['decision']=='skipped'&&!SOFT.include?(a['reason']) }
+    end
+    def sole?(dec, nam)
+      @prs.reject(&:own?).map(&:name).reject {|x| hard?(dec, x) }==[nam]
     end
     def why(dec)
       out = Hash.new {|h, k| h[k] = Hash.new(0) }
@@ -132,8 +152,9 @@ module Routing
       utl = util(dec, ops)
       wys = why(dec)
       vol = amts(ops).values.sum
-      unt = unrc(dec, ops).reject {|u| u['reason']=='turnover_min_unreachable' }
-      unr = unt.to_h {|u| [u['provider'], u] }
+      all = unrc(dec, ops).reject {|u| u['reason']=='turnover_min_unreachable' }
+      unt = all.reject {|u| u['reason']=='forced_minimum_share' }
+      unr = all.to_h {|u| [u['provider'], u] }
       @prs.reject(&:own?).each do |p|
         nam = p.name
         out << gapt(p, nam) if @his && obs(nam)>=MINOPS && (p.num('conversion_24h').to_f-@his.conv(nam))>GAPMAX
@@ -200,26 +221,28 @@ module Routing
        'message'=>"#{nam} дневной лимит выбран на #{u['utilization_pct']}% -поднять дневной лимит или снизить долю"}
     end
     def devt(nam, d, cnt = nil, unr = nil, oth = nil)
-      neg = d['deviation_pp'].to_f<0
-      top = neg && cnt && cnt.any? ? cnt.first : nil
+      neg = d['deviation_pp'].to_f.negative?
+      top = neg && cnt&.any? ? cnt.first : nil
       act = if neg&&unr
               "-цель недостижима, доступно #{unr['reachable_pct']}% из #{unr['target_pct']}%"
             elsif neg&&top
               "-отсекался #{top[1]} раз по причине #{top[0]}"
+            elsif !neg&&unr&&unr['reason']=='forced_minimum_share'
+              "-минимум #{unr['reachable_pct']}% задан заявками без альтернативы"
             elsif !neg&&oth
               "-перебор компенсирует недостижимую долю #{oth}"
             else
               '-пересмотреть процент траффика или веса профиля'
             end
-      par = if neg&&unr
-              unr['reason']=='daily_limit_headroom' ? 'daily_amount_limit' : 'status'
+      par = if unr
+              PARAMS[unr['reason']]||'status'
             elsif neg&&top
               top[0]
             else
               'traffic_percentage'
             end
-      {'code'=>neg&&unr ? 'target_unreachable' : 'share_deviation','severity'=>'medium','provider'=>nam,'parameter'=>par,
-       'evidence'=>neg&&unr ? unr['details'] : "факт #{d['share_pct']}% против цели #{d['target_pct']}%#{top ? ", основной отсев #{top[0]} #{top[1]}" : ''}",
+      {'code'=>unr ? 'target_unreachable' : 'share_deviation','severity'=>'medium','provider'=>nam,'parameter'=>par,
+       'evidence'=>unr ? unr['details'] : "факт #{d['share_pct']}% против цели #{d['target_pct']}%#{top && ", основной отсев #{top[0]} #{top[1]}"}",
        'message'=>"#{nam} отклонение доли #{d['deviation_pp']} п.п. #{act}"}
     end
     def lowt(nam, u)

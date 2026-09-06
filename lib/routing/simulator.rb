@@ -1,6 +1,4 @@
 require 'digest'
-
-
 module Routing
   class Simulator
     OUTCOMES = ['approved','rejected', 'expired'].freeze
@@ -15,15 +13,11 @@ module Routing
       @rfs =(cfg['refuse_rate']||REFUSE).to_f
       @lat = (cfg['expire_latency']||LATEMUL).to_f
     end
-
-
-
-    def take(prv, op, alt= 1)
+    def take?(prv, op, alt= 1)
       return true if @ref=='off'
       return true if @ref=='safe'&&alt<2
       rndom(op.id, prv.name, 'take')>=@rfs
     end
-
     def res(prv, op, cnv = nil)
       return 'approved' if @out=='none'
       val = (cnv||prv.num('conversion_24h')||0.5).to_f

@@ -1,0 +1,279 @@
+{
+  "period": "2026-07-30",
+  "total_operations": 90,
+  "distribution": {
+    "vipay": {
+      "count": 28,
+      "share_pct": 31.1,
+      "target_pct": 40.0,
+      "deviation_pp": -8.9,
+      "volume": 657000,
+      "volume_share_pct": 18.8,
+      "volume_target_pct": 41.0,
+      "volume_deviation_pp": -22.2
+    },
+    "payflow": {
+      "count": 14,
+      "share_pct": 15.6,
+      "target_pct": 35.0,
+      "deviation_pp": -19.4,
+      "volume": 116700,
+      "volume_share_pct": 3.3,
+      "volume_target_pct": 18.0,
+      "volume_deviation_pp": -14.7
+    },
+    "quickpay": {
+      "count": 46,
+      "share_pct": 51.1,
+      "target_pct": 25.0,
+      "deviation_pp": 26.1,
+      "volume": 2720000,
+      "volume_share_pct": 77.8,
+      "volume_target_pct": 41.0,
+      "volume_deviation_pp": 36.8
+    },
+    "spacepayments": {
+      "count": 2,
+      "share_pct": 2.2,
+      "target_pct": 0.0,
+      "deviation_pp": 2.2,
+      "volume": 1800,
+      "volume_share_pct": 0.1,
+      "volume_target_pct": 0.0,
+      "volume_deviation_pp": 0.1
+    }
+  },
+  "skip_reasons": {
+    "bank_not_in_list": 84,
+    "amount_exceeds_limit": 33,
+    "amount_below_minimum": 16
+  },
+  "skip_reasons_by_provider": {
+    "vipay": {
+      "bank_not_in_list": 41,
+      "amount_exceeds_limit": 10,
+      "amount_below_minimum": 8
+    },
+    "payflow": {
+      "bank_not_in_list": 43,
+      "amount_exceeds_limit": 23
+    },
+    "quickpay": {
+      "amount_below_minimum": 8
+    }
+  },
+  "unreachable_targets": [
+    {
+      "provider": "vipay",
+      "target_pct": 40.0,
+      "reachable_pct": 34.4,
+      "reason": "eligibility_coverage",
+      "details": "прошёл hard-фильтр на 31 заявках из 90, выше 34.4% доля не поднимется ни при каком роутинге"
+    },
+    {
+      "provider": "payflow",
+      "target_pct": 35.0,
+      "reachable_pct": 26.7,
+      "reason": "eligibility_coverage",
+      "details": "прошёл hard-фильтр на 24 заявках из 90, выше 26.7% доля не поднимется ни при каком роутинге"
+    },
+    {
+      "provider": "payflow",
+      "target_pct": 35.0,
+      "reachable_pct": 2.2,
+      "reason": "daily_limit_headroom",
+      "details": "остаток дневного лимита 100000 при среднем чеке 38839 хватает на 2 заявок"
+    },
+    {
+      "provider": "quickpay",
+      "target_pct": 25.0,
+      "reachable_pct": 45.6,
+      "reason": "forced_minimum_share",
+      "details": "единственный допустимый на 41 заявках из 90, ниже 45.6% доля не опустится ни при каком роутинге"
+    }
+  ],
+  "not_selected_reasons": {
+    "reserved_fallback": 88,
+    "lower_score": 45,
+    "declined_by_provider": 4
+  },
+  "projected_daily_utilization": {
+    "vipay": {
+      "start": 3200000,
+      "added_by_queue": 505000,
+      "used": 3705000,
+      "limit": 5000000,
+      "utilization_pct": 74.1,
+      "turnover_min": null,
+      "turnover_min_met": null,
+      "turnover_max": 4000000,
+      "turnover_max_ok": true
+    },
+    "payflow": {
+      "start": 2900000,
+      "added_by_queue": 54900,
+      "used": 2954900,
+      "limit": 3000000,
+      "utilization_pct": 98.5,
+      "turnover_min": 2000000,
+      "turnover_min_met": true,
+      "turnover_max": null,
+      "turnover_max_ok": null
+    },
+    "quickpay": {
+      "start": 1100000,
+      "added_by_queue": 1703500,
+      "used": 2803500,
+      "limit": 8000000,
+      "utilization_pct": 35.0,
+      "turnover_min": 3000000,
+      "turnover_min_met": false,
+      "turnover_max": null,
+      "turnover_max_ok": null
+    },
+    "spacepayments": {
+      "start": 0,
+      "added_by_queue": 1800,
+      "used": 1800,
+      "limit": null,
+      "utilization_pct": null,
+      "turnover_min": null,
+      "turnover_min_met": null,
+      "turnover_max": null,
+      "turnover_max_ok": null
+    }
+  },
+  "outcomes": {
+    "approved": 66,
+    "rejected": 11,
+    "expired": 13
+  },
+  "outcomes_by_provider": {
+    "quickpay": {
+      "total": 46,
+      "approved": 34,
+      "rejected": 6,
+      "expired": 6,
+      "declined": 0,
+      "success_rate": 0.739,
+      "avg_latency_sec": 53.9
+    },
+    "vipay": {
+      "total": 28,
+      "approved": 21,
+      "rejected": 3,
+      "expired": 4,
+      "declined": 3,
+      "success_rate": 0.75,
+      "avg_latency_sec": 79.3
+    },
+    "payflow": {
+      "total": 14,
+      "approved": 9,
+      "rejected": 2,
+      "expired": 3,
+      "declined": 1,
+      "success_rate": 0.643,
+      "avg_latency_sec": 100.6
+    },
+    "spacepayments": {
+      "total": 2,
+      "approved": 2,
+      "rejected": 0,
+      "expired": 0,
+      "declined": 0,
+      "success_rate": 1.0,
+      "avg_latency_sec": 9.0
+    }
+  },
+  "conversion_calibration": {
+    "vipay": {
+      "declared": 0.87,
+      "actual_smoothed": 0.7641,
+      "gap": -0.1059,
+      "expired_share": 0.0732,
+      "avg_latency_sec": 87.3
+    },
+    "payflow": {
+      "declared": 0.91,
+      "actual_smoothed": 0.5348,
+      "gap": -0.3752,
+      "expired_share": 0.3684,
+      "avg_latency_sec": 278.1
+    },
+    "quickpay": {
+      "declared": 0.79,
+      "actual_smoothed": 0.6758,
+      "gap": -0.1142,
+      "expired_share": 0.15,
+      "avg_latency_sec": 130.0
+    }
+  },
+  "recommendations": [
+    "payflow заявленная конверсия завышена на 0.375 снизить процент трафик с 35",
+    "payflow каждая 3 заявка уходит в просрочку -посмотреть таймаут провайдера",
+    "payflow дневной лимит выбран на 98.5% -поднять дневной лимит или снизить долю",
+    "payflow отклонение доли -19.4 п.п. -цель недостижима, доступно 2.2% из 35.0%",
+    "quickpay отклонение доли 26.1 п.п. -минимум 45.6% задан заявками без альтернативы",
+    "quickpay недобор обязательного оборота 196500 -повысить вес в профиле",
+    "внешние провайдеры не покрыли 2.2% заявок -расширить диапазоны сумм"
+  ],
+  "recommendations_detailed": [
+    {
+      "code": "conversion_overstated",
+      "severity": "high",
+      "provider": "payflow",
+      "parameter": "traffic_percentage",
+      "evidence": "заявлено 0.91- фактически 0.535 по 19 операциям",
+      "message": "payflow заявленная конверсия завышена на 0.375 снизить процент трафик с 35"
+    },
+    {
+      "code": "high_expired_share",
+      "severity": "high",
+      "provider": "payflow",
+      "parameter": "avg_latency_sec",
+      "evidence": "просрочек 36.8% при средней задержке 278.1 c",
+      "message": "payflow каждая 3 заявка уходит в просрочку -посмотреть таймаут провайдера"
+    },
+    {
+      "code": "daily_limit_near",
+      "severity": "medium",
+      "provider": "payflow",
+      "parameter": "daily_amount_limit",
+      "evidence": "использовано 2954900 из 3000000 (98.5%)",
+      "message": "payflow дневной лимит выбран на 98.5% -поднять дневной лимит или снизить долю"
+    },
+    {
+      "code": "target_unreachable",
+      "severity": "medium",
+      "provider": "payflow",
+      "parameter": "daily_amount_limit",
+      "evidence": "остаток дневного лимита 100000 при среднем чеке 38839 хватает на 2 заявок",
+      "message": "payflow отклонение доли -19.4 п.п. -цель недостижима, доступно 2.2% из 35.0%"
+    },
+    {
+      "code": "target_unreachable",
+      "severity": "medium",
+      "provider": "quickpay",
+      "parameter": "traffic_percentage",
+      "evidence": "единственный допустимый на 41 заявках из 90, ниже 45.6% доля не опустится ни при каком роутинге",
+      "message": "quickpay отклонение доли 26.1 п.п. -минимум 45.6% задан заявками без альтернативы"
+    },
+    {
+      "code": "turnover_min_unmet",
+      "severity": "high",
+      "provider": "quickpay",
+      "parameter": "daily_turnover_min",
+      "evidence": "оборот 2803500 при обязательстве 3000000",
+      "message": "quickpay недобор обязательного оборота 196500 -повысить вес в профиле"
+    },
+    {
+      "code": "self_provider_used",
+      "severity": "high",
+      "provider": "spacepayments",
+      "parameter": "banks",
+      "evidence": "2 из 90 заявок ушли на self-провайдера",
+      "message": "внешние провайдеры не покрыли 2.2% заявок -расширить диапазоны сумм"
+    }
+  ]
+}
