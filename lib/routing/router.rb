@@ -19,6 +19,7 @@ module Routing
       @stp= STEP
     end
     def run(ops)
+      raise ArgumentError,'нет провайдеров, роутить некуда' if @prs.nil?||@prs.empty?
       raise ArgumentError,'очередь пуста' if ops.nil?||ops.empty?
       tms =ops.map(&:time).compact.sort
       @bse = tms.empty? ? 0.0 : tms.first.to_f
