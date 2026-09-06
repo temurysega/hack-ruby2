@@ -85,7 +85,7 @@ RSpec.describe Routing::Constraints do
        'in_progress_count_limit'=>0,'in_progress_count'=>5,
        'in_progress_amount_limit'=>1,'in_progress_amount'=>1,
        'available_requisites'=>0,'provider_margin_pct'=>2.0,'merchant_margin_pct'=>1.0,
-       'banks'=>['alfa'],'requests_minut'=>0}
+       'banks'=>['alfa'],'requests_per_minute_limit'=>0}
     end
     let(:steps) do
       [['provider_inactive', {}],
@@ -98,7 +98,7 @@ RSpec.describe Routing::Constraints do
        ['no_available_requisites', {'in_progress_amount_limit'=>nil}],
        ['negative_margin', {'available_requisites'=>5}],
        ['bank_not_in_list', {'provider_margin_pct'=>1.0}],
-       ['rate_limi', {'banks'=>[]}]]
+       ['rate_limit_exceeded', {'banks'=>[]}]]
     end
     it 'выдаёт причины строго в порядке правил когда нарушено всё' do
       cur= allbad
@@ -141,10 +141,10 @@ RSpec.describe Routing::Constraints do
         expect(got['details']).not_to be_empty
       end
     end
-    it 'rate_limi' do
-      prv = Routing::Models::Provider.new(base.merge('requests_minut' => 1))
+    it 'rate_limit_exceeded' do
+      prv = Routing::Models::Provider.new(base.merge('requests_per_minute_limit' => 1))
       prv.hold(1, 990)
-      expect(con.deny(prv, Fix.oper(150_000, 'sberbank'), 1000)['reason']).to eq('rate_limi')
+      expect(con.deny(prv, Fix.oper(150_000, 'sberbank'), 1000)['reason']).to eq('rate_limit_exceeded')
     end
   end
   describe 'провайдер проходит когда должен' do

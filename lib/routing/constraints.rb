@@ -94,11 +94,11 @@ module Routing
     end
     def rate(prv, _op, now)
       ovr = @ovr[prv.name]||{}
-      lim =prv['requests_minut']||prv['requests_per_minute_limit']||ovr['requests_minut']||ovr['requests_per_minute_limit']
+      lim =prv['requests_per_minute_limit']||prv['requests_minut']||ovr['requests_per_minute_limit']||ovr['requests_minut']
       return nil if lim.nil?||now.nil?
       cnt= prv['dispatch_times'].count {|t| now-t<@win }+1
       return nil if cnt<=lim.to_i
-      rej('rate_limi', "превышена интенсивност #{cnt} > #{lim} заявок за #{@win.to_i}")
+      rej('rate_limit_exceeded', "превышена интенсивност #{cnt} > #{lim} заявок за #{@win.to_i}")
     end
   end
 end
