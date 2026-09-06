@@ -8,7 +8,7 @@ module Routing
       @wgt =WEIGHTS.merge(cfg['weights']||{})
       @dw = (cfg['declared_weight']||DECLARED).to_f
       @bnd=cfg['bands']||[]
-      @trn=cfg['turnover']||{}
+      @ovr=cfg['overrides']||{}
       @his =his
     end
     def calc(prv, op, ctx = {})
@@ -32,7 +32,7 @@ module Routing
       tie = rnk.select {|x| (x[1]['score']-top).abs<EPS }
       return {'winner'=>rnk[0][0],'reason'=>'best_score','ranked'=>rnk} if tie.size==1
       win = tie.min_by {|x| x[0].num('priority')||99.0 }
-      cod = tie.size==rnk.size ? 'all_scores_equal' : 'tie_broken_by_priority'
+      cod= tie.size==rnk.size ? 'all_scores_equal' : 'tie_broken_by_priority'
       {'winner'=>win[0],'reason'=>cod,'ranked'=>rnk}
     end
     private
@@ -51,7 +51,7 @@ module Routing
       0.5+(tgt-act)/2.0
     end
     def voll(prv, _op, ctx)
-      tgt=(prv.num('volume_share_pct')||prv.num('traffic_percentage')||0.0)/100.0
+      tgt=(fld(prv, 'volume_share_pct')||prv.num('traffic_percentage')||0.0)/100.0
       vol=(ctx['volume']||0).to_f
       return tgt.zero? ? 0.5 : 1.0 if vol.zero?
       act = (ctx['vols']||{}).fetch(prv.name, 0).to_f/vol
@@ -84,13 +84,15 @@ module Routing
       1.0-(ctx['scarce']||{}).fetch(prv.name, 0.0).to_f
     end
     def turn(prv, op, _ctx)
-      com = @trn[prv.name]||{}
       cur = prv.num('daily_approved_amount').to_f+op.amt
-      hi = prv.num('daily_turnover_max')||flt(com['daily_turnover_max'])
+      hi = fld(prv, 'daily_turnover_max')
       return 0.0 if hi&&cur>hi
-      lo = prv.num('daily_turnover_min')||flt(com['daily_turnover_min'])
+      lo = fld(prv, 'daily_turnover_min')
       return 0.5 if lo.nil?||lo<=0||cur>=lo
       0.5+0.5*(lo-cur)/lo
+    end
+    def fld(prv, key)
+      prv.num(key)||flt((@ovr[prv.name]||{})[key])
     end
     def flt(val)
       val.nil? ? nil : val.to_f

@@ -4,6 +4,7 @@ module Routing
     WINDOW=60
     def initialize(cfg = {})
       @win =(cfg['window_sec']||WINDOW).to_f
+      @ovr =cfg['overrides']||{}
     end
     def deny(prv, op, now = nil)
       RULES.each do |r|
@@ -92,7 +93,7 @@ module Routing
       rej('bank_not_in_list', "банк не обслуживается #{op.bank}, разрешены #{lst.join(', ')} ")
     end
     def rate(prv, _op, now)
-      lim =prv['requests_minut']||prv['requests_per_minute_limit']
+      lim =prv['requests_minut']||prv['requests_per_minute_limit']||(@ovr[prv.name]||{})['requests_minut']
       return nil if lim.nil?||now.nil?
       cnt= prv['dispatch_times'].count {|t| now-t<@win }+1
       return nil if cnt<=lim.to_i
