@@ -13,7 +13,7 @@ module Routing
     end
     def make(dec, ops = [], per = nil)
       raise ArgumentError,'нет решений для отчёта' if dec.nil?||dec.empty?
-      rec = tips(dec, ops)
+      rec = safe(dec, ops)
       {'period'=>per.to_s.empty? ? 'не указан' : per.to_s,'total_operations'=>dec.size,'distribution'=>dist(dec, ops),'skip_reasons'=>skip(dec),'skip_reasons_by_provider'=>why(dec),'unreachable_targets'=>unrc(dec, ops),'not_selected_reasons'=>cnts(dec, true),'projected_daily_utilization'=>util(dec, ops),'outcomes'=>dec.map {|d| d['simulated_result'] }.tally,'outcomes_by_provider'=>outc(dec),'conversion_calibration'=>calb,'recommendations'=>rec.map {|t| t['message'] },'recommendations_detailed'=>rec}
     end
     def dist(dec, ops = [])
@@ -120,6 +120,12 @@ module Routing
         [p.name, {'declared'=>dcl,'actual_smoothed'=>pct(act, 4),'gap'=>pct(act-dcl, 4),'expired_share'=>pct(@his.expr(p.name), 4),'avg_latency_sec'=>pct(@his.late(p.name))}]
       end
     end
+    def safe(dec, ops)
+      tips(dec, ops)
+    rescue StandardError => e
+      [{'code'=>'recommendations_failed','severity'=>'low','provider'=>'нет','parameter'=>'нет','evidence'=>e.message,
+        'message'=>"рекомендации не собраны- #{e.message}"}]
+    end
     def tips(dec, ops = [])
       out = []
       dst= dist(dec, ops)
@@ -130,7 +136,7 @@ module Routing
       unr = unt.to_h {|u| [u['provider'], u] }
       @prs.reject(&:own?).each do |p|
         nam = p.name
-        out << gapt(p, nam) if @his && (p.num('conversion_24h').to_f-@his.conv(nam))>GAPMAX
+        out << gapt(p, nam) if @his && obs(nam)>=MINOPS && (p.num('conversion_24h').to_f-@his.conv(nam))>GAPMAX
         out << expt(nam) if @his && @his.expr(nam)>EXPMAX
         out << ldt(nam, utl[nam]) if utl[nam]['utilization_pct'].to_f>LOADMAX*100
         oth = unt.map {|u| u['provider'] }.reject {|x| x==nam }.first
@@ -173,11 +179,14 @@ module Routing
       return 0.0 if own.nil?
       (own.num('volume_share_pct')||(@ovr[nam]||{})['volume_share_pct']&.to_f||own.num('traffic_percentage')||0.0).to_f
     end
+    def obs(nam)
+      @his.nil? ? 0 : (@his.stat[nam]||{})['operations'].to_i
+    end
     def gapt(prv, nam)
       dcl = prv.num('conversion_24h').to_f
       act = @his.conv(nam)
       {'code'=>'conversion_overstated','severity'=>'high','provider'=>nam,'parameter'=>'traffic_percentage',
-       'evidence'=>"заявлено #{dcl}- фактически #{pct(act, 3)} по #{@his.stat[nam]['operations']} операциям",
+       'evidence'=>"заявлено #{dcl}- фактически #{pct(act, 3)} по #{obs(nam)} операциям",
        'message'=>"#{nam} заявленная конверсия завышена на #{pct(dcl-act, 3)} снизить процент трафик с #{prv.num('traffic_percentage').to_i}"}
     end
     def expt(nam)
