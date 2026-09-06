@@ -55,7 +55,7 @@ module Routing
         if @sim.take(sel['winner'], op, cnd.size)
           win = sel['winner']
           why = ref.empty? ? sel['reason'] : 'selected_after_decline'
-          why = 'relaxed_internal_limits' if rlx
+          why = ref.empty? ? 'relaxed_internal_limits' : 'relaxed_after_decline' if rlx
         else
           ref<< sel['winner'].name
         end
@@ -88,10 +88,11 @@ module Routing
           dcs = @sco.dcsv(rnk, nam)
           hit['decisive_signal'] = dcs if dcs
           hit
+        elsif ref.include?(nam)
+          txt = bad[nam] ? 'отказал после ослабления резервов, заявка передана следующему' : 'отказал в приёме заявка передана следующему'
+          {'provider'=>nam,'decision'=>'skipped','reason'=>'declined_by_provider','details'=>txt,'score'=>rnk.dig(nam,'score')}
         elsif bad[nam]
           {'provider'=>nam,'decision'=>'skipped','reason'=>bad[nam]['reason'],'details'=>bad[nam]['details']}
-        elsif ref.include?(nam)
-          {'provider'=>nam,'decision'=>'skipped','reason'=>'declined_by_provider','details'=>'отказал в приёме заявка передана следующему','score'=>rnk.dig(nam,'score')}
         elsif rnk.key?(nam)
           {'provider'=>nam,'decision'=>'skipped','reason'=>'lower_score','details'=>"оценка #{rnk.dig(nam,'score')} против #{rnk.dig(win.name,'score')} у #{win.name}",
            'score'=>rnk.dig(nam,'score'),'signals'=>rnk.dig(nam,'signals')}
@@ -156,6 +157,7 @@ module Routing
       return 'единственный допустим провайдер' if why=='only_eligible_provider'
       return 'выбран после отказа предыдущего провайдера' if why=='selected_after_decline'
       return 'внутренние резервы ослаблены, провайдер допустим по исходным лимитам' if why=='relaxed_internal_limits'
+      return 'выбран после отказа предыдущего провайдера при ослабленных внутренних резервах' if why=='relaxed_after_decline'
       return 'заявка непригодна к роутингу, отдана self-провайдеру' if why=='invalid_operation'
       return 'ни один провайдер не удовлетворяет ограничениям, self-провайдер отсутствует' if why=='no_provider_available'
       return 'внешние провайдеры недоступны- включён self-провайдер' if why=='no_eligible_providers'
