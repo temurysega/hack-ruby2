@@ -208,7 +208,7 @@ module Routing
       act = @his.conv(nam)
       {'code'=>'conversion_overstated','severity'=>'high','provider'=>nam,'parameter'=>'traffic_percentage',
        'evidence'=>"заявлено #{dcl}- фактически #{pct(act, 3)} по #{obs(nam)} операциям",
-       'message'=>"#{nam} заявленная конверсия завышена на #{pct(dcl-act, 3)} снизить процент трафик с #{prv.num('traffic_percentage').to_i}"}
+       'message'=>"#{nam} заявленная конверсия завышена на #{pct(dcl-act, 3)} снизить процент трафика с #{prv.num('traffic_percentage').to_i}"}
     end
     def expt(nam)
       {'code'=>'high_expired_share','severity'=>'high','provider'=>nam,'parameter'=>'avg_latency_sec',
