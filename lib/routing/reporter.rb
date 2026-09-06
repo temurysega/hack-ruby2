@@ -14,7 +14,7 @@ module Routing
     def make(dec, ops = [], per = nil)
       raise ArgumentError,'нет решений для отчёта' if dec.nil?||dec.empty?
       rec = tips(dec, ops)
-      {'period'=>per.to_s.empty? ? 'не указан' : per.to_s,'total_operations'=>dec.size,'distribution'=>dist(dec, ops),'skip_reasons'=>skip(dec),'not_selected_reasons'=>cnts(dec, true),'projected_daily_utilization'=>util(dec, ops),'outcomes'=>dec.map {|d| d['simulated_result'] }.tally,'conversion_calibration'=>calb,'recommendations'=>rec.map {|t| t['message'] },'recommendations_detailed'=>rec}
+      {'period'=>per.to_s.empty? ? 'не указан' : per.to_s,'total_operations'=>dec.size,'distribution'=>dist(dec, ops),'skip_reasons'=>skip(dec),'skip_reasons_by_provider'=>why(dec),'not_selected_reasons'=>cnts(dec, true),'projected_daily_utilization'=>util(dec, ops),'outcomes'=>dec.map {|d| d['simulated_result'] }.tally,'conversion_calibration'=>calb,'recommendations'=>rec.map {|t| t['message'] },'recommendations_detailed'=>rec}
     end
     def dist(dec, ops = [])
       sum= amts(ops)
@@ -36,6 +36,17 @@ module Routing
     end
     def skip(dec)
       cnts(dec, false)
+    end
+    def why(dec)
+      out = Hash.new {|h, k| h[k] = Hash.new(0) }
+      dec.each do |d|
+        (d['attempts']||[]).each do |a|
+          next unless a['decision']=='skipped'
+          next if SOFT.include?(a['reason'])
+          out[a['provider']][a['reason']] += 1
+        end
+      end
+      out.to_h {|nam, cnt| [nam, cnt.sort_by {|_, v| -v }.to_h] }
     end
     def util(dec, ops =[])
       sum= amts(ops)
@@ -62,12 +73,13 @@ module Routing
       out = []
       dst= dist(dec, ops)
       utl = util(dec, ops)
+      wys = why(dec)
       @prs.reject(&:own?).each do |p|
         nam = p.name
         out << gapt(p, nam) if @his && (p.num('conversion_24h').to_f-@his.conv(nam))>GAPMAX
         out << expt(nam) if @his && @his.expr(nam)>EXPMAX
         out << ldt(nam, utl[nam]) if utl[nam]['utilization_pct'].to_f>LOADMAX*100
-        out << devt(nam, dst[nam]) if dec.size>=MINOPS && dst[nam] && dst[nam]['deviation_pp'].abs>DEVMAX
+        out << devt(nam, dst[nam], wys[nam]) if dec.size>=MINOPS && dst[nam] && dst[nam]['deviation_pp'].abs>DEVMAX
         out << lowt(nam, utl[nam]) if utl[nam]['turnover_min_met']==false
       end
       fbk = dec.count {|d| d['selected_provider']==Models::Provider::SELFPROVIDER }
@@ -115,10 +127,13 @@ module Routing
        'evidence'=>"использовано #{u['used']} из #{u['limit']} (#{u['utilization_pct']}%)",
        'message'=>"#{nam} дневной лимит выбран на #{u['utilization_pct']}% -поднять дневной лимит или снизить долю"}
     end
-    def devt(nam, d)
-      {'code'=>'share_deviation','severity'=>'medium','provider'=>nam,'parameter'=>'traffic_percentage',
-       'evidence'=>"факт #{d['share_pct']}% против цели #{d['target_pct']}%",
-       'message'=>"#{nam} отклонение доли #{d['deviation_pp']} п.п. -пересмотреть процент траффика или веса профиля"}
+    def devt(nam, d, cnt = nil)
+      top = d['deviation_pp'].to_f<0 && cnt && cnt.any? ? cnt.first : nil
+      act = top ? "-отсекался #{top[1]} раз по причине #{top[0]}" : '-пересмотреть процент траффика или веса профиля'
+      {'code'=>'share_deviation','severity'=>'medium','provider'=>nam,
+       'parameter'=>top ? top[0] : 'traffic_percentage',
+       'evidence'=>"факт #{d['share_pct']}% против цели #{d['target_pct']}%#{top ? ", основной отсев #{top[0]} #{top[1]}" : ''}",
+       'message'=>"#{nam} отклонение доли #{d['deviation_pp']} п.п. #{act}"}
     end
     def lowt(nam, u)
       {'code'=>'turnover_min_unmet','severity'=>'high','provider'=>nam,'parameter'=>'daily_turnover_min',
