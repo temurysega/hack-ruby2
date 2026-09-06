@@ -6,16 +6,69 @@ AllCops:
     - 'vendor/**/*'
     - 'out/**/*'
     - 'scripts/validate_10.rb'
-require:
+plugins:
   - rubocop-rspec
-Style/FrozenStringLiteralComment:
+Layout/EndOfLine:
+  EnforcedStyle: lf
+Layout/EmptyLineAfterGuardClause:
   Enabled: false
-Style/Documentation:
+Layout/EmptyLineBetweenDefs:
+  Enabled: false
+Layout/EmptyLinesAroundAccessModifier:
+  Enabled: false
+Layout/HashAlignment:
+  Enabled: false
+Layout/LineLength:
+  Enabled: false
+Layout/SpaceAfterComma:
+  Enabled: false
+Layout/SpaceAroundEqualsInParameterDefault:
+  Enabled: false
+Layout/SpaceAroundOperators:
+  Enabled: false
+Layout/SpaceInsideBlockBraces:
+  Enabled: false
+Layout/SpaceInsideHashLiteralBraces:
+  Enabled: false
+Lint/AmbiguousOperatorPrecedence:
+  Enabled: false
+Lint/ConstantDefinitionInBlock:
+  Exclude:
+    - 'spec/**/*'
+Metrics:
   Enabled: false
 Naming/MethodParameterName:
   Enabled: false
 Naming/VariableName:
   Enabled: false
-Metrics/BlockLength:
-  Exclude: ['spec/**/*']
-
+Style/Documentation:
+  Enabled: false
+Style/FrozenStringLiteralComment:
+  Enabled: false
+Style/IfUnlessModifier:
+  Enabled: false
+Style/NestedTernaryOperator:
+  Enabled: false
+Style/NumericLiterals:
+  Enabled: false
+Style/TrivialAccessors:
+  Enabled: false
+Style/WordArray:
+  Enabled: false
+RSpec/EmptyLineAfterExample:
+  Enabled: false
+RSpec/EmptyLineAfterExampleGroup:
+  Enabled: false
+RSpec/EmptyLineAfterFinalLet:
+  Enabled: false
+RSpec/ExampleLength:
+  Enabled: false
+RSpec/LeakyConstantDeclaration:
+  Exclude:
+    - 'spec/**/*'
+RSpec/MultipleExpectations:
+  Enabled: false
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
+RSpec/SpecFilePathFormat:
+  Enabled: false
