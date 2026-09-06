@@ -68,7 +68,7 @@ module Routing
         nam = p.name
         if nam==win.name
           {'provider'=>nam,'decision'=>'selected','reason'=>why,'details'=>desc(why, nam, rnk),
-           'score'=>rnk.dig(nam,'score'),'signals'=>rnk.dig(nam,'signals')}
+           'score'=>rnk.dig(nam,'score'),'signals'=>rnk.dig(nam,'signals'),'weighted'=>rnk.dig(nam,'weighted'),'decisive_signal'=>@sco.dcsv(rnk, nam)}
         elsif bad[nam]
           {'provider'=>nam,'decision'=>'skipped','reason'=>bad[nam]['reason'],'details'=>bad[nam]['details']}
         elsif ref.include?(nam)

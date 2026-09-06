@@ -35,6 +35,13 @@ module Routing
       cod= tie.size==rnk.size ? 'all_scores_equal' : 'tie_broken_by_priority'
       {'winner'=>win[0],'reason'=>cod,'ranked'=>rnk}
     end
+    def dcsv(rnk, nam)
+      own = rnk[nam]
+      return nil if own.nil?
+      oth = rnk.reject {|k, _| k==nam }.values.max_by {|r| r['score'] }
+      return nil if oth.nil?
+      own['weighted'].max_by {|s, v| v-oth['weighted'][s].to_f }&.first
+    end
     private
 
 
