@@ -19,11 +19,13 @@ module Cli
     opt = DEFS.transform_values {|v| File.join(ROOT, v) }
     opt['profile'] = nil
     opt['queue'] = nil
+    opt['seed'] = nil
     prs = OptionParser.new do |o|
       o.banner= 'Использование ruby bin/route [опции]'
       o.on('--queue FILE', 'очередь заявок') {|v| opt['queue'] = v }
       o.on('--out FILE', 'куда записать решения') {|v| opt['out'] = v }
       o.on('--profile NAME', 'профиль страты') {|v| opt['profile'] = v }
+      o.on('--seed N', 'зерно симуляции') {|v| opt['seed'] = v }
       o.on('--providers FILE', 'состояние провайдеров') {|v| opt['providers'] = v }
       o.on('--history FILE','история операций') {|v| opt['history'] = v }
       o.on('--config FILE', 'файл страт') {|v| opt['config'] = v }
@@ -33,6 +35,9 @@ module Cli
     opt
   rescue OptionParser::ParseError => e
     fail(e.message)
+  end
+  def self.sim(cfg, opt)
+    opt['seed'].nil? ? cfg.sim : cfg.sim.merge('seed'=>opt['seed'].to_i)
   end
   def self.feed(pth, key)
     raw = JSON.parse(File.read(pth))
@@ -67,7 +72,7 @@ module Cli
     prs= Routing::Models::Provider.list(feed(opt['providers'], 'providers'))
     ops= Routing::Models::Operation.list(feed(opt['queue'], 'operations'))
     his =Routing::History.load(opt['history'])
-    rtr= Routing::Router.new(prs, Routing::Constraints.new(cfg.win),Routing::Scoring.new(cfg.sco, his), Routing::Simulator.new(cfg.sim))
+    rtr= Routing::Router.new(prs, Routing::Constraints.new(cfg.win),Routing::Scoring.new(cfg.sco, his), Routing::Simulator.new(sim(cfg, opt)))
     dec = rtr.run(ops)
     File.write(opt['out'], JSON.pretty_generate(dec))
     show(opt, cfg, rtr, dec)
