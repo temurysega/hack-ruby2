@@ -104,8 +104,6 @@
       "used": 3705000,
       "limit": 5000000,
       "utilization_pct": 74.1,
-      "turnover_min": null,
-      "turnover_min_met": null,
       "turnover_max": 4000000,
       "turnover_max_ok": true
     },
@@ -116,9 +114,7 @@
       "limit": 3000000,
       "utilization_pct": 98.5,
       "turnover_min": 2000000,
-      "turnover_min_met": true,
-      "turnover_max": null,
-      "turnover_max_ok": null
+      "turnover_min_met": true
     },
     "quickpay": {
       "start": 1100000,
@@ -127,20 +123,7 @@
       "limit": 8000000,
       "utilization_pct": 35.0,
       "turnover_min": 3000000,
-      "turnover_min_met": false,
-      "turnover_max": null,
-      "turnover_max_ok": null
-    },
-    "spacepayments": {
-      "start": 0,
-      "added_by_queue": 1800,
-      "used": 1800,
-      "limit": null,
-      "utilization_pct": null,
-      "turnover_min": null,
-      "turnover_min_met": null,
-      "turnover_max": null,
-      "turnover_max_ok": null
+      "turnover_min_met": false
     }
   },
   "outcomes": {
@@ -208,6 +191,27 @@
       "expired_share": 0.15,
       "avg_latency_sec": 130.0
     }
+  },
+  "goal_conflicts": {
+    "operations_with_choice": 38,
+    "conflicting": 38,
+    "resolved_by_signal": {
+      "keep": 28,
+      "band": 7,
+      "load": 5,
+      "cnts": 1
+    },
+    "overruled_signals": {
+      "load": 36,
+      "turn": 36,
+      "conv": 17,
+      "cnts": 9,
+      "band": 8,
+      "voll": 6,
+      "keep": 3,
+      "prio": 2
+    },
+    "tie_broken_by_priority": 0
   },
   "recommendations": [
     "payflow заявленная конверсия завышена на 0.375 снизить процент трафика с 35",

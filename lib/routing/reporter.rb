@@ -16,7 +16,7 @@ module Routing
     def make(dec, ops = [], per = nil)
       raise ArgumentError,'нет решений для отчёта' if dec.nil?||dec.empty?
       rec = safe(dec, ops)
-      {'period'=>per.to_s.empty? ? 'не указан' : per.to_s,'total_operations'=>dec.size,'distribution'=>dist(dec, ops),'skip_reasons'=>skip(dec),'skip_reasons_by_provider'=>why(dec),'unreachable_targets'=>unrc(dec, ops),'not_selected_reasons'=>cnts(dec, true),'projected_daily_utilization'=>util(dec, ops),'outcomes'=>dec.map {|d| d['simulated_result'] }.tally,'outcomes_by_provider'=>outc(dec),'conversion_calibration'=>calb,'recommendations'=>rec.map {|t| t['message'] },'recommendations_detailed'=>rec}
+      {'period'=>per.to_s.empty? ? 'не указан' : per.to_s,'total_operations'=>dec.size,'distribution'=>dist(dec, ops),'skip_reasons'=>skip(dec),'skip_reasons_by_provider'=>why(dec),'unreachable_targets'=>unrc(dec, ops),'not_selected_reasons'=>cnts(dec, true),'projected_daily_utilization'=>proj(dec, ops),'outcomes'=>dec.map {|d| d['simulated_result'] }.tally,'outcomes_by_provider'=>outc(dec),'conversion_calibration'=>calb,'goal_conflicts'=>conf(dec),'recommendations'=>rec.map {|t| t['message'] },'recommendations_detailed'=>rec}
     end
     def dist(dec, ops = [])
       sum= amts(ops)
@@ -131,6 +131,25 @@ module Routing
                   'turnover_min'=>low&.round,'turnover_min_met'=>low.nil? ? nil : use>=low,
                   'turnover_max'=>hig&.round,'turnover_max_ok'=>hig.nil? ? nil : use<=hig}]
       end
+    end
+    def proj(dec, ops = [])
+      util(dec, ops).select {|_, v| v['limit'] }.transform_values(&:compact)
+    end
+    def conf(dec)
+      pik = dec.map {|d| (d['attempts']||[]).select {|a| a['signals'] } }.select {|a| a.size>1 }
+      led = Hash.new(0)
+      cfl = 0
+      pik.each do |a|
+        win = a.find {|x| x['decision']=='selected' }
+        nxt = a.first['signals'].keys.to_h {|s| [s, a.max_by {|x| x['signals'][s].to_f }['provider']] }
+        cfl += 1 if nxt.values.uniq.size>1
+        nxt.each {|s, nam| led[s] += 1 if win&&nam!=win['provider'] }
+      end
+      sel = dec.filter_map {|d| (d['attempts']||[]).find {|a| a['decision']=='selected' } }
+      {'operations_with_choice'=>pik.size,'conflicting'=>cfl,
+       'resolved_by_signal'=>sel.filter_map {|a| a['decisive_signal'] }.tally.sort_by {|_, v| -v }.to_h,
+       'overruled_signals'=>led.sort_by {|_, v| -v }.to_h,
+       'tie_broken_by_priority'=>sel.count {|a| a['reason']=='tie_broken_by_priority' }}
     end
     def calb
       return {} if @his.nil?
